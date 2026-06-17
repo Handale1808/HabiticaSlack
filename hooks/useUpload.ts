@@ -14,11 +14,16 @@ interface DoneItem {
 }
 
 interface UseUploadReturn {
-  upload: (file: File, userId: string, habiticaTagId?: string | null) => Promise<void>
+  upload: (
+    file: File,
+    userId: string,
+    habiticaTagId?: string | null,
+  ) => Promise<void>;
   reset: () => void;
   status: UploadStatus;
   doneItems: DoneItem[];
   errorMessage: string | null;
+  listId: string | null;
 }
 
 function fileToBase64(
@@ -45,8 +50,13 @@ export function useUpload(): UseUploadReturn {
   const [status, setStatus] = useState<UploadStatus>("idle");
   const [doneItems, setDoneItems] = useState<DoneItem[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [listId, setListId] = useState<string | null>(null);
 
-  const upload = async (file: File, userId: string, habiticaTagId: string | null = null) => {
+  const upload = async (
+    file: File,
+    userId: string,
+    habiticaTagId: string | null = null,
+  ) => {
     setStatus("loading");
     setDoneItems([]);
     setErrorMessage(null);
@@ -124,7 +134,9 @@ export function useUpload(): UseUploadReturn {
         .single();
 
       if (dbError || !uploadData) {
-        throw new Error(`Database error: ${dbError?.message ?? "No data returned from Uploads insert"}`);
+        throw new Error(
+          `Database error: ${dbError?.message ?? "No data returned from Uploads insert"}`,
+        );
       }
 
       const rawContent: string = rawAiResponse.choices[0].message.content;
@@ -145,14 +157,17 @@ export function useUpload(): UseUploadReturn {
         .single();
 
       if (listError || !listData) {
-        throw new Error(`Lists insert error: ${listError?.message ?? "No data returned from Lists insert"}`);
+        throw new Error(
+          `Lists insert error: ${listError?.message ?? "No data returned from Lists insert"}`,
+        );
       }
+      setListId(listData.id);
 
       const doneItemRows = tasks.map((task) => ({
-  list_id: listData.id,
-  text: task.text,
-  habitica_tag: habiticaTagId,
-}))
+        list_id: listData.id,
+        text: task.text,
+        habitica_tag: habiticaTagId,
+      }));
 
       const { data: insertedItems, error: doneItemsError } = await supabase
         .from("DoneItems")
@@ -160,7 +175,9 @@ export function useUpload(): UseUploadReturn {
         .select("id, text, habitica_tag, habitica_send, habitica_id");
 
       if (doneItemsError || !insertedItems) {
-        throw new Error(`DoneItems insert error: ${doneItemsError?.message ?? "No data returned from DoneItems insert"}`);
+        throw new Error(
+          `DoneItems insert error: ${doneItemsError?.message ?? "No data returned from DoneItems insert"}`,
+        );
       }
 
       setDoneItems(insertedItems);
@@ -177,7 +194,8 @@ export function useUpload(): UseUploadReturn {
     setStatus("idle");
     setDoneItems([]);
     setErrorMessage(null);
+    setListId(null);
   };
 
-  return { upload, reset, status, doneItems, errorMessage };
+  return { upload, reset, status, doneItems, listId, errorMessage };
 }

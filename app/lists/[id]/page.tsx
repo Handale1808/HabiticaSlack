@@ -10,6 +10,8 @@ import { DoneItemRow } from "@/components/DoneItemRow";
 import { useUser } from "@/context/UserContext";
 import { useHabiticaTags } from "@/hooks/useHabiticaTags";
 import { useHabiticaSend } from "@/hooks/useHabiticaSend";
+import { useSlackSend } from "@/hooks/useSlackSend";
+import { SlackPreview } from "@/components/SlackPreview";
 
 interface DoneItem {
   id: string;
@@ -72,7 +74,11 @@ export default function ListDetailPage({
 
   const [isBulkSending, setIsBulkSending] = useState(false);
 
-  console.log("habitica creds", currentUser?.habitica_user_id, currentUser?.habitica_api_token);
+  console.log(
+    "habitica creds",
+    currentUser?.habitica_user_id,
+    currentUser?.habitica_api_token,
+  );
 
   const { sendItem, sendingIds, sendErrors } = useHabiticaSend(
     currentUser?.habitica_user_id ?? "",
@@ -80,15 +86,27 @@ export default function ListDetailPage({
     markAsSent,
   );
 
-const handleSendAll = async () => {
-  setIsBulkSending(true);
-  const unsent = items.filter((item) => item.habitica_send !== true);
-  for (const item of unsent) {
-    await sendItem(item);
-    await new Promise((resolve) => setTimeout(resolve, 500));
-  }
-  setIsBulkSending(false);
-};
+  const {
+    triggerEnrichment,
+    enrichedItems,
+    summary,
+    availableCategories,
+    handleCategoryChange,
+    confirmSend,
+    cancelPreview,
+    enrichmentStatus,
+    enrichmentError,
+  } = useSlackSend(id, items);
+
+  const handleSendAll = async () => {
+    setIsBulkSending(true);
+    const unsent = items.filter((item) => item.habitica_send !== true);
+    for (const item of unsent) {
+      await sendItem(item);
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+    setIsBulkSending(false);
+  };
 
   return (
     <main className="min-h-screen flex flex-col items-center gap-8 p-8">
@@ -148,6 +166,41 @@ const handleSendAll = async () => {
           >
             {isBulkSending ? "Sending..." : "Send all to Habitica"}
           </button>
+
+          <button
+            onClick={triggerEnrichment}
+            disabled={
+              enrichmentStatus === "loading" || enrichmentStatus === "success"
+            }
+            className="border border-gray-700 rounded px-4 py-2 text-sm disabled:opacity-50 hover:bg-gray-900 transition-colors"
+          >
+            {enrichmentStatus === "loading"
+              ? "Preparing..."
+              : enrichmentStatus === "success"
+                ? "Sent to Slack"
+                : "Send to Slack"}
+          </button>
+
+          {(enrichmentStatus === "preview" ||
+            enrichmentStatus === "sending" ||
+            enrichmentStatus === "error") &&
+            enrichedItems.length > 0 &&
+            summary && (
+              <SlackPreview
+                enrichedItems={enrichedItems}
+                summary={summary}
+                availableCategories={availableCategories}
+                onCategoryChange={handleCategoryChange}
+                onConfirm={confirmSend}
+                onCancel={cancelPreview}
+                isSending={enrichmentStatus === "sending"}
+                sendError={enrichmentError}
+              />
+            )}
+
+          {enrichmentStatus === "success" && (
+            <p className="text-gray-500 text-sm">Successfully sent to Slack.</p>
+          )}
         </div>
       )}
     </main>
