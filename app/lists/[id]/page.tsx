@@ -1,49 +1,70 @@
-'use client'
+// app/lists/[id]/page.tsx
 
-import React, { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { supabase } from '@/lib/supabaseClient'
-import { useDoneItems } from '@/hooks/useDoneItems'
-import { DoneItemRow } from '@/components/DoneItemRow'
+"use client";
+
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { supabase } from "@/lib/supabaseClient";
+import { useDoneItems } from "@/hooks/useDoneItems";
+import { DoneItemRow } from "@/components/DoneItemRow";
+import { useUser } from "@/context/UserContext";
+import { useHabiticaTags } from "@/hooks/useHabiticaTags";
 
 interface DoneItem {
-  id: string
-  text: string
+  id: string;
+  text: string;
+  habitica_tag: string | null;
 }
 
-export default function ListDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = React.use(params)
+export default function ListDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = React.use(params);
 
-  const [initialItems, setInitialItems] = useState<DoneItem[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [initialItems, setInitialItems] = useState<DoneItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchItems = async () => {
-      setIsLoading(true)
-      setError(null)
+      setIsLoading(true);
+      setError(null);
 
       const { data, error } = await supabase
-        .from('DoneItems')
-        .select('id, text')
-        .eq('list_id', id)
-        .order('created_at', { ascending: true })
+        .from("DoneItems")
+        .select("id, text, habitica_tag")
+        .eq("list_id", id)
+        .order("created_at", { ascending: true });
 
       if (error) {
-        setError(error.message)
-        setIsLoading(false)
-        return
+        setError(error.message);
+        setIsLoading(false);
+        return;
       }
 
-      setInitialItems(data ?? [])
-      setIsLoading(false)
-    }
+      setInitialItems(data ?? []);
+      setIsLoading(false);
+    };
 
-    fetchItems()
-  }, [id])
+    fetchItems();
+  }, [id]);
 
-  const { items, handleTextChange, handleBlur, updateStatus, updateError } =
-    useDoneItems(initialItems)
+  const {
+    items,
+    handleTextChange,
+    handleBlur,
+    handleTagChange,
+    updateStatus,
+    updateError,
+  } = useDoneItems(initialItems);
+
+  const { currentUser } = useUser();
+  const { tags } = useHabiticaTags(
+    currentUser?.habitica_user_id ?? "",
+    currentUser?.habitica_api_token ?? "",
+  );
 
   return (
     <main className="min-h-screen flex flex-col items-center gap-8 p-8">
@@ -72,18 +93,21 @@ export default function ListDetailPage({ params }: { params: Promise<{ id: strin
               key={item.id}
               id={item.id}
               text={item.text}
+              tagId={item.habitica_tag}
+              tags={tags}
               onChange={handleTextChange}
               onBlur={handleBlur}
+              onTagChange={handleTagChange}
             />
           ))}
-          {updateStatus === 'saving' && (
+          {updateStatus === "saving" && (
             <p className="text-gray-500 text-sm">Saving...</p>
           )}
-          {updateStatus === 'error' && (
+          {updateStatus === "error" && (
             <p className="text-red-500 text-sm">{updateError}</p>
           )}
         </div>
       )}
     </main>
-  )
+  );
 }

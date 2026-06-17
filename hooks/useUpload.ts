@@ -8,6 +8,7 @@ type UploadStatus = "idle" | "loading" | "success" | "error";
 interface DoneItem {
   id: string;
   text: string;
+  habitica_tag: string | null;
 }
 
 interface UseUploadReturn {
@@ -154,7 +155,7 @@ export function useUpload(): UseUploadReturn {
       const { data: insertedItems, error: doneItemsError } = await supabase
         .from("DoneItems")
         .insert(doneItemRows)
-        .select("id, text");
+        .select("id, text, habitica_tag");
 
       if (doneItemsError || !insertedItems) {
         throw new Error(`DoneItems insert error: ${doneItemsError?.message ?? "No data returned from DoneItems insert"}`);

@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabaseClient";
 interface DoneItem {
   id: string;
   text: string;
+  habitica_tag: string | null;
 }
 
 type UpdateStatus = "idle" | "saving" | "error";
@@ -15,6 +16,7 @@ interface UseDoneItemsReturn {
   items: DoneItem[];
   handleTextChange: (id: string, text: string) => void;
   handleBlur: (id: string) => Promise<void>;
+  handleTagChange: (id: string, tagId: string | null) => Promise<void>;
   updateStatus: UpdateStatus;
   updateError: string | null;
 }
@@ -59,5 +61,27 @@ export function useDoneItems(initialItems: DoneItem[]): UseDoneItemsReturn {
     setUpdateStatus("idle");
   };
 
-  return { items, handleTextChange, handleBlur, updateStatus, updateError };
+  const handleTagChange = async (id: string, tagId: string | null) => {
+  setItems((prev) =>
+    prev.map((item) => (item.id === id ? { ...item, habitica_tag: tagId } : item)),
+  );
+
+  setUpdateStatus("saving");
+  setUpdateError(null);
+
+  const { error } = await supabase
+    .from("DoneItems")
+    .update({ habitica_tag: tagId })
+    .eq("id", id);
+
+  if (error) {
+    setUpdateStatus("error");
+    setUpdateError(error.message);
+    return;
+  }
+
+  setUpdateStatus("idle");
+};
+
+  return { items, handleTextChange, handleBlur, handleTagChange, updateStatus, updateError };
 }
