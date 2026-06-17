@@ -120,7 +120,7 @@ export default function ListsPage() {
           onClick={() => setIsCreating((prev) => !prev)}
           className="text-sm text-gray-400 hover:text-white transition-colors"
         >
-          {isCreating ? "Cancel" : "New list"}
+          {isCreating ? "Cancel" : "New manual list"}
         </button>
       </div>
 
