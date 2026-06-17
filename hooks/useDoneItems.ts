@@ -1,7 +1,7 @@
 
 // hooks/useDoneItems.ts
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
 interface DoneItem {
@@ -23,6 +23,12 @@ export function useDoneItems(initialItems: DoneItem[]): UseDoneItemsReturn {
   const [items, setItems] = useState<DoneItem[]>(initialItems);
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus>("idle");
   const [updateError, setUpdateError] = useState<string | null>(null);
+
+  useEffect(() => {
+  if (initialItems.length > 0) {
+    setItems(initialItems);
+  }
+}, [initialItems]);
 
   const handleTextChange = (id: string, text: string) => {
     setItems((prev) =>

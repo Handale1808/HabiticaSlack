@@ -15,16 +15,8 @@ export default function UploadPage() {
   const { currentUser } = useUser();
   const router = useRouter();
 
-  const [initialItems, setInitialItems] = useState(doneItems);
-
-  useEffect(() => {
-    if (status === "success" && doneItems.length > 0) {
-      setInitialItems(doneItems);
-    }
-  }, [status, doneItems]);
-
   const { items, handleTextChange, handleBlur, updateStatus, updateError } =
-    useDoneItems(initialItems);
+    useDoneItems(doneItems);
 
   useEffect(() => {
     if (!currentUser) {
