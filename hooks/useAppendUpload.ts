@@ -1,10 +1,8 @@
-// hooks/useUpload.ts
-
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { fileToBase64, stripMarkdownFences } from "@/lib/uploadUtils";
 
-type UploadStatus = "idle" | "loading" | "success" | "error";
+type AppendStatus = "idle" | "loading" | "success" | "error";
 
 interface DoneItem {
   id: string;
@@ -14,32 +12,28 @@ interface DoneItem {
   habitica_id: string | null;
 }
 
-interface UseUploadReturn {
-  upload: (
+interface UseAppendUploadReturn {
+  appendUpload: (
     file: File,
     userId: string,
+    listId: string,
     habiticaTagId?: string | null,
-  ) => Promise<void>;
-  reset: () => void;
-  status: UploadStatus;
-  doneItems: DoneItem[];
+  ) => Promise<DoneItem[]>;
+  status: AppendStatus;
   errorMessage: string | null;
-  listId: string | null;
 }
 
-export function useUpload(): UseUploadReturn {
-  const [status, setStatus] = useState<UploadStatus>("idle");
-  const [doneItems, setDoneItems] = useState<DoneItem[]>([]);
+export function useAppendUpload(): UseAppendUploadReturn {
+  const [status, setStatus] = useState<AppendStatus>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [listId, setListId] = useState<string | null>(null);
 
-  const upload = async (
+  const appendUpload = async (
     file: File,
     userId: string,
+    listId: string,
     habiticaTagId: string | null = null,
-  ) => {
+  ): Promise<DoneItem[]> => {
     setStatus("loading");
-    setDoneItems([]);
     setErrorMessage(null);
 
     try {
@@ -104,20 +98,16 @@ export function useUpload(): UseUploadReturn {
         throw new Error(`Signed URL error: ${signedUrlError.message}`);
       }
 
-      const { data: uploadData, error: dbError } = await supabase
+      const { error: dbError } = await supabase
         .from("Uploads")
         .insert({
           user_id: userId,
           image_url: signedUrlData.signedUrl,
           ai_response: rawAiResponse,
-        })
-        .select("id")
-        .single();
+        });
 
-      if (dbError || !uploadData) {
-        throw new Error(
-          `Database error: ${dbError?.message ?? "No data returned from Uploads insert"}`,
-        );
+      if (dbError) {
+        throw new Error(`Database error: ${dbError.message}`);
       }
 
       const rawContent: string = rawAiResponse.choices[0].message.content;
@@ -131,21 +121,12 @@ export function useUpload(): UseUploadReturn {
         throw new Error("Failed to parse AI response JSON");
       }
 
-      const { data: listData, error: listError } = await supabase
-        .from("Lists")
-        .insert({ upload_id: uploadData.id })
-        .select("id")
-        .single();
-
-      if (listError || !listData) {
-        throw new Error(
-          `Lists insert error: ${listError?.message ?? "No data returned from Lists insert"}`,
-        );
+      if (!Array.isArray(tasks) || tasks.length === 0) {
+        throw new Error("No tasks found in image");
       }
-      setListId(listData.id);
 
       const doneItemRows = tasks.map((task) => ({
-        list_id: listData.id,
+        list_id: listId,
         text: task.text,
         habitica_tag: habiticaTagId,
       }));
@@ -157,26 +138,20 @@ export function useUpload(): UseUploadReturn {
 
       if (doneItemsError || !insertedItems) {
         throw new Error(
-          `DoneItems insert error: ${doneItemsError?.message ?? "No data returned from DoneItems insert"}`,
+          `DoneItems insert error: ${doneItemsError?.message ?? "No data returned"}`,
         );
       }
 
-      setDoneItems(insertedItems);
       setStatus("success");
+      return insertedItems;
     } catch (err) {
       setErrorMessage(
         err instanceof Error ? err.message : "An unexpected error occurred",
       );
       setStatus("error");
+      return [];
     }
   };
 
-  const reset = () => {
-    setStatus("idle");
-    setDoneItems([]);
-    setErrorMessage(null);
-    setListId(null);
-  };
-
-  return { upload, reset, status, doneItems, listId, errorMessage };
+  return { appendUpload, status, errorMessage };
 }

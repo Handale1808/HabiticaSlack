@@ -13,11 +13,11 @@ import { useHabiticaSend } from "@/hooks/useHabiticaSend";
 import { useSlackSend } from "@/hooks/useSlackSend";
 import { SendAllButton } from "@/components/SendAllButton";
 import { SlackSendBlock } from "@/components/SlackSendBlock";
+import { HabiticaTagSelector } from "@/components/HabiticaTagSelector";
 
 export default function UploadPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
-  const [newTagName, setNewTagName] = useState("");
 
   const { upload, reset, status, doneItems, listId, errorMessage } =
     useUpload();
@@ -82,65 +82,36 @@ export default function UploadPage() {
     upload(selectedFile, currentUser.id, selectedTagId);
   };
 
-  const handleAddTag = async () => {
-    if (!newTagName.trim()) return;
-    const tag = await createTag(newTagName.trim());
-    if (tag) {
-      setSelectedTagId(tag.id);
-      setNewTagName("");
-    }
-  };
-
   const handleReset = () => {
     setSelectedFile(null);
     setSelectedTagId(null);
-    setNewTagName("");
     reset();
   };
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center gap-8 p-8">
+      <div className="w-full max-w-sm flex justify-end">
+        <button
+          onClick={() => router.push("/lists")}
+          className="text-sm text-gray-400 hover:text-white transition-colors"
+        >
+          New list
+        </button>
+      </div>
       <h1 className="text-2xl font-bold">Upload your done list</h1>
       <p className="text-sm text-gray-500">Logged in as {currentUser.name}</p>
 
       {status !== "success" && (
         <div className="flex flex-col gap-4 w-full max-w-sm">
-          <div className="flex flex-col gap-2">
-            <select
-              value={selectedTagId ?? ""}
-              onChange={(e) => setSelectedTagId(e.target.value || null)}
-              disabled={tagsLoading}
-              className="border border-gray-700 rounded px-4 py-2 text-sm bg-transparent focus:outline-none focus:ring-1 focus:ring-gray-500 disabled:opacity-50"
-            >
-              <option value="" disabled>
-                {tagsLoading ? "Loading tags..." : "Select a tag"}
-              </option>
-              {tags.map((tag) => (
-                <option key={tag.id} value={tag.id}>
-                  {tag.name}
-                </option>
-              ))}
-            </select>
-
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={newTagName}
-                onChange={(e) => setNewTagName(e.target.value)}
-                placeholder="New tag name"
-                className="flex-1 border border-gray-700 rounded px-3 py-2 text-sm bg-transparent focus:outline-none focus:ring-1 focus:ring-gray-500"
-              />
-              <button
-                onClick={handleAddTag}
-                disabled={!newTagName.trim() || createLoading}
-                className="bg-black text-white rounded px-3 py-2 text-sm disabled:opacity-50 border border-gray-700"
-              >
-                {createLoading ? "..." : "Add tag"}
-              </button>
-            </div>
-
-            {tagsError && <p className="text-red-500 text-sm">{tagsError}</p>}
-          </div>
+          <HabiticaTagSelector
+            tags={tags}
+            selectedTagId={selectedTagId}
+            onChange={setSelectedTagId}
+            createTag={createTag}
+            isLoading={tagsLoading}
+            createLoading={createLoading}
+            error={tagsError}
+          />
 
           <input
             type="file"

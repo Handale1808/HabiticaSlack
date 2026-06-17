@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { useSlackSend } from "@/hooks/useSlackSend";
 import { SlackPreview } from "@/components/SlackPreview";
+import { useUser } from "@/context/UserContext";
+import { useHabiticaTags } from "@/hooks/useHabiticaTags";
+import { ManualCreateForm } from "@/components/ManualCreateForm";
 
 interface ListRow {
   id: string;
@@ -44,6 +47,19 @@ export default function ListsPage() {
     enrichmentStatus,
     enrichmentError,
   } = useSlackSend(activeSlackListId ?? "", slackItems);
+
+  const [isCreating, setIsCreating] = useState(false);
+  const { currentUser } = useUser();
+  const {
+    tags,
+    createTag,
+    isLoading: tagsLoading,
+    createLoading,
+    error: tagsError,
+  } = useHabiticaTags(
+    currentUser?.habitica_user_id ?? "",
+    currentUser?.habitica_api_token ?? "",
+  );
 
   useEffect(() => {
     const fetchLists = async () => {
@@ -98,7 +114,28 @@ export default function ListsPage() {
 
   return (
     <main className="min-h-screen flex flex-col items-center gap-8 p-8">
-      <h1 className="text-2xl font-bold">Your lists</h1>
+      <div className="w-full max-w-sm flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Your lists</h1>
+        <button
+          onClick={() => setIsCreating((prev) => !prev)}
+          className="text-sm text-gray-400 hover:text-white transition-colors"
+        >
+          {isCreating ? "Cancel" : "New list"}
+        </button>
+      </div>
+
+      {isCreating && (
+        <div className="w-full max-w-sm">
+          <ManualCreateForm
+            tags={tags}
+            createTag={createTag}
+            tagsLoading={tagsLoading}
+            createLoading={createLoading}
+            tagsError={tagsError}
+            onCancel={() => setIsCreating(false)}
+          />
+        </div>
+      )}
 
       {isLoading && <p className="text-sm text-gray-500">Loading...</p>}
       {error && <p className="text-red-500 text-sm">{error}</p>}

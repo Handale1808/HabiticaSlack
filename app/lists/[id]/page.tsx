@@ -13,6 +13,8 @@ import { useHabiticaSend } from "@/hooks/useHabiticaSend";
 import { useSlackSend } from "@/hooks/useSlackSend";
 import { SendAllButton } from "@/components/SendAllButton";
 import { SlackSendBlock } from "@/components/SlackSendBlock";
+import { AppendUploadButton } from "@/components/AppendUploadButton";
+import { AddItemsButton } from "@/components/AddItemsButton";
 
 interface DoneItem {
   id: string;
@@ -99,6 +101,10 @@ export default function ListDetailPage({
     enrichmentError,
   } = useSlackSend(id, items);
 
+  const onAppended = (newItems: DoneItem[]) => {
+    setInitialItems((prev) => [...prev, ...newItems]);
+  };
+
   return (
     <main className="min-h-screen flex flex-col items-center gap-8 p-8">
       <div className="w-full max-w-lg">
@@ -111,6 +117,19 @@ export default function ListDetailPage({
       </div>
 
       <h1 className="text-2xl font-bold">Done items</h1>
+
+      {!isLoading && currentUser && (
+        <div className="w-full max-w-lg flex flex-col gap-2">
+          <AppendUploadButton
+            listId={id}
+            userId={currentUser.id}
+            tags={tags}
+            onAppended={onAppended}
+            disabled={isLoading}
+          />
+          <AddItemsButton listId={id} tags={tags} onAppended={onAppended} />
+        </div>
+      )}
 
       {isLoading && <p className="text-sm text-gray-500">Loading...</p>}
       {error && <p className="text-red-500 text-sm">{error}</p>}
