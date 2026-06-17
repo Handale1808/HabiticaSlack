@@ -11,6 +11,65 @@ interface SlackPreviewProps {
   sendError: string | null;
 }
 
+import { useState } from "react";
+
+interface CategoryComboboxProps {
+  value: string;
+  availableCategories: string[];
+  onChange: (value: string) => void;
+}
+
+function CategoryCombobox({
+  value,
+  availableCategories,
+  onChange,
+}: CategoryComboboxProps) {
+  const [inputValue, setInputValue] = useState(value);
+  const [isOpen, setIsOpen] = useState(false);
+
+  const filtered = availableCategories
+    .filter((cat) => cat.toLowerCase().includes(inputValue.toLowerCase()))
+    .slice(0, 6);
+
+  return (
+    <div className="relative">
+      <input
+        type="text"
+        value={inputValue}
+        onChange={(e) => {
+          setInputValue(e.target.value);
+          setIsOpen(true);
+        }}
+        onFocus={() => setIsOpen(true)}
+        onBlur={() => {
+          setTimeout(() => {
+            setIsOpen(false);
+            onChange(inputValue);
+          }, 150);
+        }}
+        className="border border-gray-700 rounded px-2 py-1 text-xs bg-transparent focus:outline-none focus:ring-1 focus:ring-gray-500 w-40"
+      />
+      {isOpen && filtered.length > 0 && (
+        <ul className="absolute z-10 top-full left-0 mt-1 w-full border border-gray-700 rounded bg-black">
+          {filtered.map((cat) => (
+            <li
+              key={cat}
+              onMouseDown={() => {
+                setInputValue(cat);
+                setIsOpen(false);
+                onChange(cat);
+              }}
+              className="px-2 py-1 text-xs cursor-pointer hover:bg-gray-900"
+            >
+              {cat}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 export function SlackPreview({
   enrichedItems,
   summary,
@@ -21,12 +80,15 @@ export function SlackPreview({
   isSending,
   sendError,
 }: SlackPreviewProps) {
-  const grouped = enrichedItems.reduce<Record<string, EnrichedItem[]>>((acc, item) => {
-    const key = item.category;
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(item);
-    return acc;
-  }, {});
+  const grouped = enrichedItems.reduce<Record<string, EnrichedItem[]>>(
+    (acc, item) => {
+      const key = item.category;
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(item);
+      return acc;
+    },
+    {},
+  );
 
   return (
     <div className="flex flex-col gap-4 border border-gray-700 rounded p-4 mt-2">
@@ -36,17 +98,11 @@ export function SlackPreview({
           {categoryItems.map((item) => (
             <div key={item.id} className="flex gap-2 items-start">
               <p className="flex-1 text-sm text-gray-300">{item.slack_text}</p>
-              <select
+              <CategoryCombobox
                 value={item.category}
-                onChange={(e) => onCategoryChange(item.id, e.target.value)}
-                className="border border-gray-700 rounded px-2 py-1 text-xs bg-transparent focus:outline-none focus:ring-1 focus:ring-gray-500"
-              >
-                {availableCategories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
+                availableCategories={availableCategories}
+                onChange={(val) => onCategoryChange(item.id, val)}
+              />
             </div>
           ))}
         </div>

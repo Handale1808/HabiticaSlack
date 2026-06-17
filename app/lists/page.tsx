@@ -79,7 +79,9 @@ export default function ListsPage() {
 
     const { data, error } = await supabase
       .from("DoneItems")
-      .select("id, text, habitica_tag, habitica_send, habitica_id")
+      .select(
+        "id, text, habitica_tag, habitica_send, habitica_id, slack_text, category",
+      )
       .eq("list_id", listId);
 
     setSlackItemsLoading(false);
@@ -89,8 +91,9 @@ export default function ListsPage() {
       return;
     }
 
-    setSlackItems(data ?? []);
-    await triggerEnrichment();
+    const fetched = data ?? [];
+    setSlackItems(fetched);
+    await triggerEnrichment(fetched);
   };
 
   return (

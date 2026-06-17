@@ -9,6 +9,8 @@ interface DoneItem {
   habitica_tag: string | null;
   habitica_send: boolean | null;
   habitica_id: string | null;
+  slack_text?: string | null;
+  category?: string | null;
 }
 
 export interface EnrichedItem {
@@ -30,7 +32,7 @@ type EnrichmentStatus =
   | "error";
 
 interface UseSlackSendReturn {
-  triggerEnrichment: () => Promise<void>;
+  triggerEnrichment: (itemsOverride?: DoneItem[]) => Promise<void>;
   enrichedItems: EnrichedItem[];
   summary: string | null;
   availableCategories: string[];
@@ -56,11 +58,57 @@ export function useSlackSend(
     useState<EnrichmentStatus>("idle");
   const [enrichmentError, setEnrichmentError] = useState<string | null>(null);
 
-  const triggerEnrichment = async (): Promise<void> => {
-    if (items.length === 0) {
+  const triggerEnrichment = async (
+    itemsOverride?: DoneItem[],
+  ): Promise<void> => {
+    const workingItems = Array.isArray(itemsOverride)
+      ? itemsOverride
+      : Array.isArray(items)
+        ? items
+        : [];
+    if (workingItems.length === 0) {
       setEnrichmentError("No items to send.");
       setEnrichmentStatus("error");
       return;
+    }
+
+    const allEnriched = workingItems.every(
+      (item) => item.slack_text && item.category,
+    );
+
+    if (allEnriched) {
+      const { data: summaryData } = await supabase
+        .from("Lists")
+        .select("summary")
+        .eq("id", listId)
+        .single();
+
+      if (summaryData?.summary) {
+        const { data: categoryRows } = await supabase
+          .from("DoneItems")
+          .select("category")
+          .not("category", "is", null);
+
+        const existingCategories: string[] = [
+          ...new Set(
+            (categoryRows ?? [])
+              .map((row: { category: string | null }) => row.category)
+              .filter((c): c is string => c !== null),
+          ),
+        ].sort();
+
+        setEnrichedItems(
+          workingItems.map((item) => ({
+            ...item,
+            category: item.category!,
+            slack_text: item.slack_text!,
+          })),
+        );
+        setSummary(summaryData.summary);
+        setAvailableCategories(existingCategories);
+        setEnrichmentStatus("preview");
+        return;
+      }
     }
 
     setEnrichmentStatus("loading");
@@ -109,7 +157,7 @@ JSON shape:
 }
 
 Items to process:
-${JSON.stringify(items.map((i) => ({ id: i.id, text: i.text })))}`;
+${JSON.stringify(workingItems.map((i) => ({ id: i.id, text: i.text })))}`;
 
     try {
       const response = await fetch(
@@ -150,7 +198,7 @@ ${JSON.stringify(items.map((i) => ({ id: i.id, text: i.text })))}`;
         throw new Error("AI response has unexpected shape");
       }
 
-      const enriched: EnrichedItem[] = items.map((item) => {
+      const enriched: EnrichedItem[] = workingItems.map((item) => {
         const aiItem = parsed.items.find((p) => p.id === item.id);
         return {
           ...item,
@@ -159,14 +207,13 @@ ${JSON.stringify(items.map((i) => ({ id: i.id, text: i.text })))}`;
         };
       });
 
-      await Promise.all(
-        enriched.map((item) =>
-          supabase
-            .from("DoneItems")
-            .update({ category: item.category, slack_text: item.slack_text })
-            .eq("id", item.id),
-        ),
-      );
+      supabase
+        .from("Lists")
+        .update({ summary: parsed.summary })
+        .eq("id", listId)
+        .then(({ error }) => {
+          if (error) console.error("Failed to save summary:", error.message);
+        });
 
       const newCategories = [
         ...new Set([...existingCategories, ...enriched.map((i) => i.category)]),

@@ -39,7 +39,9 @@ export default function ListDetailPage({
 
       const { data, error } = await supabase
         .from("DoneItems")
-        .select("id, text, habitica_tag, habitica_send, habitica_id")
+        .select(
+          "id, text, habitica_tag, habitica_send, habitica_id, slack_text, category",
+        )
         .eq("list_id", id)
         .order("created_at", { ascending: true });
 
@@ -168,7 +170,7 @@ export default function ListDetailPage({
           </button>
 
           <button
-            onClick={triggerEnrichment}
+            onClick={() => triggerEnrichment(items)}
             disabled={
               enrichmentStatus === "loading" || enrichmentStatus === "success"
             }
