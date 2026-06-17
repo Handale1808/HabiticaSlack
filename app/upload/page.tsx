@@ -13,12 +13,9 @@ import { useHabiticaSend } from "@/hooks/useHabiticaSend";
 import { useSlackSend } from "@/hooks/useSlackSend";
 import { SendAllButton } from "@/components/SendAllButton";
 import { SlackSendBlock } from "@/components/SlackSendBlock";
-import { HabiticaTagSelector } from "@/components/HabiticaTagSelector";
+import { UploadForm } from "@/components/UploadForm";
 
 export default function UploadPage() {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
-
   const { upload, reset, status, doneItems, listId, errorMessage } =
     useUpload();
   const { currentUser, isRehydrating } = useUser();
@@ -72,19 +69,7 @@ export default function UploadPage() {
   if (isRehydrating) return null;
   if (!currentUser) return null;
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] ?? null;
-    setSelectedFile(file);
-  };
-
-  const handleUpload = () => {
-    if (!selectedFile) return;
-    upload(selectedFile, currentUser.id, selectedTagId);
-  };
-
   const handleReset = () => {
-    setSelectedFile(null);
-    setSelectedTagId(null);
     reset();
   };
 
@@ -102,33 +87,17 @@ export default function UploadPage() {
       <p className="text-sm text-gray-500">Logged in as {currentUser.name}</p>
 
       {status !== "success" && (
-        <div className="flex flex-col gap-4 w-full max-w-sm">
-          <HabiticaTagSelector
+        <div className="w-full max-w-sm">
+          <UploadForm
             tags={tags}
-            selectedTagId={selectedTagId}
-            onChange={setSelectedTagId}
             createTag={createTag}
-            isLoading={tagsLoading}
+            tagsLoading={tagsLoading}
             createLoading={createLoading}
-            error={tagsError}
+            tagsError={tagsError}
+            onUpload={(file, tagId) => upload(file, currentUser.id, tagId)}
+            isLoading={status === "loading"}
+            error={errorMessage}
           />
-
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
-            className="text-sm"
-          />
-          <button
-            onClick={handleUpload}
-            disabled={!selectedFile || status === "loading"}
-            className="bg-black text-white rounded px-4 py-2 text-sm disabled:opacity-50"
-          >
-            {status === "loading" ? "Uploading..." : "Upload"}
-          </button>
-          {status === "error" && (
-            <p className="text-red-500 text-sm">{errorMessage}</p>
-          )}
         </div>
       )}
 

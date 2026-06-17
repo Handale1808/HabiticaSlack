@@ -15,6 +15,7 @@ import { SendAllButton } from "@/components/SendAllButton";
 import { SlackSendBlock } from "@/components/SlackSendBlock";
 import { AppendUploadButton } from "@/components/AppendUploadButton";
 import { AddItemsButton } from "@/components/AddItemsButton";
+import { TrainingToggle } from "@/components/TrainingToggle";
 
 interface DoneItem {
   id: string;
@@ -34,6 +35,7 @@ export default function ListDetailPage({
   const [initialItems, setInitialItems] = useState<DoneItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [useForTraining, setUseForTraining] = useState(false);
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -54,6 +56,16 @@ export default function ListDetailPage({
         return;
       }
 
+      const { data: listData } = await supabase
+        .from("Lists")
+        .select("use_for_training")
+        .eq("id", id)
+        .single();
+
+      if (listData) {
+        setUseForTraining(listData.use_for_training);
+      }
+
       setInitialItems(data ?? []);
       setIsLoading(false);
     };
@@ -72,7 +84,12 @@ export default function ListDetailPage({
   } = useDoneItems(initialItems);
 
   const { currentUser } = useUser();
-  const { tags } = useHabiticaTags(
+  const {
+    tags,
+    createTag,
+    isLoading: tagsLoading,
+    createLoading,
+  } = useHabiticaTags(
     currentUser?.habitica_user_id ?? "",
     currentUser?.habitica_api_token ?? "",
   );
@@ -124,10 +141,18 @@ export default function ListDetailPage({
             listId={id}
             userId={currentUser.id}
             tags={tags}
+            createTag={createTag}
+            tagsLoading={tagsLoading}
+            createLoading={createLoading}
             onAppended={onAppended}
             disabled={isLoading}
           />
           <AddItemsButton listId={id} tags={tags} onAppended={onAppended} />
+          <TrainingToggle
+            listId={id}
+            value={useForTraining}
+            onChange={setUseForTraining}
+          />
         </div>
       )}
 

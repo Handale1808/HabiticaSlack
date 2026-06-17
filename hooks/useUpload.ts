@@ -45,6 +45,40 @@ export function useUpload(): UseUploadReturn {
     try {
       const { base64, mimeType } = await fileToBase64(file);
 
+      const { data: trainingData } = await supabase
+        .from("Lists")
+        .select("Uploads!Lists_upload_id_fkey(image_url)")
+        .eq("use_for_training", true)
+        .eq("Uploads.user_id", userId)
+        .limit(5)
+        .order("created_at", { ascending: false });
+
+      const exampleMessages = (trainingData ?? []).flatMap((row) => {
+        const upload = Array.isArray(row.Uploads)
+          ? row.Uploads[0]
+          : row.Uploads;
+        if (!upload?.image_url) return [];
+        return [
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: 'Transcribe this handwritten done list as JSON. Return only: { "tasks": [ { "text": "..." } ] }',
+              },
+              {
+                type: "image_url",
+                image_url: { url: upload.image_url },
+              },
+            ],
+          },
+          {
+            role: "assistant",
+            content: JSON.stringify({ tasks: [{ text: "example task" }] }),
+          },
+        ];
+      });
+
       const openRouterResponse = await fetch(
         "https://openrouter.ai/api/v1/chat/completions",
         {
@@ -56,6 +90,7 @@ export function useUpload(): UseUploadReturn {
           body: JSON.stringify({
             model: "anthropic/claude-haiku-4-5",
             messages: [
+              ...exampleMessages,
               {
                 role: "user",
                 content: [

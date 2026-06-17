@@ -8,11 +8,13 @@ import { SlackPreview } from "@/components/SlackPreview";
 import { useUser } from "@/context/UserContext";
 import { useHabiticaTags } from "@/hooks/useHabiticaTags";
 import { ManualCreateForm } from "@/components/ManualCreateForm";
+import { TrainingToggle } from "@/components/TrainingToggle";
 
 interface ListRow {
   id: string;
   created_at: string;
   slack_sent: boolean | null;
+  use_for_training: boolean;
 }
 
 export default function ListsPage() {
@@ -68,7 +70,7 @@ export default function ListsPage() {
 
       const { data, error } = await supabase
         .from("Lists")
-        .select("id, created_at, slack_sent")
+        .select("id, created_at, slack_sent, use_for_training")
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -110,6 +112,14 @@ export default function ListsPage() {
     const fetched = data ?? [];
     setSlackItems(fetched);
     await triggerEnrichment(fetched, listId);
+  };
+
+  const handleTrainingChange = (listId: string, newValue: boolean) => {
+    setLists((prev) =>
+      prev.map((l) =>
+        l.id === listId ? { ...l, use_for_training: newValue } : l,
+      ),
+    );
   };
 
   return (
@@ -185,6 +195,13 @@ export default function ListsPage() {
                       : "Send to Slack"}
                   </button>
                 )}
+                <TrainingToggle
+                  listId={list.id}
+                  value={list.use_for_training}
+                  onChange={(newValue) =>
+                    handleTrainingChange(list.id, newValue)
+                  }
+                />
               </div>
 
               {activeSlackListId === list.id && slackItemsError && (
