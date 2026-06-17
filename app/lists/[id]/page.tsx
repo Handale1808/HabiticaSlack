@@ -80,14 +80,15 @@ export default function ListDetailPage({
     markAsSent,
   );
 
-  const handleSendAll = async () => {
-    setIsBulkSending(true);
-    const unsent = items.filter((item) => item.habitica_send !== true);
-    for (const item of unsent) {
-      await sendItem(item);
-    }
-    setIsBulkSending(false);
-  };
+const handleSendAll = async () => {
+  setIsBulkSending(true);
+  const unsent = items.filter((item) => item.habitica_send !== true);
+  for (const item of unsent) {
+    await sendItem(item);
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+  setIsBulkSending(false);
+};
 
   return (
     <main className="min-h-screen flex flex-col items-center gap-8 p-8">
