@@ -1,15 +1,30 @@
+// app/upload/page.tsx
+
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUpload } from "@/hooks/useUpload";
 import { useUser } from "@/context/UserContext";
+import { useDoneItems } from "@/hooks/useDoneItems";
+import { DoneItemRow } from "@/components/DoneItemRow";
 
 export default function UploadPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const { upload, reset, status, aiResponse, errorMessage } = useUpload();
+  const { upload, reset, status, doneItems, errorMessage } = useUpload();
   const { currentUser } = useUser();
   const router = useRouter();
+
+  const [initialItems, setInitialItems] = useState(doneItems);
+
+  useEffect(() => {
+    if (status === "success" && doneItems.length > 0) {
+      setInitialItems(doneItems);
+    }
+  }, [status, doneItems]);
+
+  const { items, handleTextChange, handleBlur, updateStatus, updateError } =
+    useDoneItems(initialItems);
 
   useEffect(() => {
     if (!currentUser) {
@@ -61,13 +76,25 @@ export default function UploadPage() {
       )}
 
       {status === "success" && (
-        <div className="flex flex-col gap-4 w-full max-w-2xl">
-          <pre className="bg-gray-900 text-green-400 rounded p-4 text-xs overflow-auto whitespace-pre-wrap break-words">
-            {JSON.stringify(aiResponse, null, 2)}
-          </pre>
+        <div className="flex flex-col gap-3 w-full max-w-lg">
+          {items.map((item) => (
+            <DoneItemRow
+              key={item.id}
+              id={item.id}
+              text={item.text}
+              onChange={handleTextChange}
+              onBlur={handleBlur}
+            />
+          ))}
+          {updateStatus === "error" && (
+            <p className="text-red-500 text-sm">{updateError}</p>
+          )}
+          {updateStatus === "saving" && (
+            <p className="text-gray-500 text-sm">Saving...</p>
+          )}
           <button
             onClick={handleReset}
-            className="bg-black text-white rounded px-4 py-2 text-sm"
+            className="bg-black text-white rounded px-4 py-2 text-sm mt-2"
           >
             Upload another
           </button>

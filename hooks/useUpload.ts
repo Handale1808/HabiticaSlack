@@ -1,13 +1,20 @@
+// hooks/useUpload.ts
+
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
 type UploadStatus = "idle" | "loading" | "success" | "error";
 
+interface DoneItem {
+  id: string;
+  text: string;
+}
+
 interface UseUploadReturn {
   upload: (file: File, userId: string) => Promise<void>;
   reset: () => void;
   status: UploadStatus;
-  aiResponse: unknown | null;
+  doneItems: DoneItem[];
   errorMessage: string | null;
 }
 
@@ -27,14 +34,18 @@ function fileToBase64(
   });
 }
 
+function stripMarkdownFences(content: string): string {
+  return content.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "");
+}
+
 export function useUpload(): UseUploadReturn {
   const [status, setStatus] = useState<UploadStatus>("idle");
-  const [aiResponse, setAiResponse] = useState<unknown | null>(null);
+  const [doneItems, setDoneItems] = useState<DoneItem[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const upload = async (file: File, userId: string) => {
     setStatus("loading");
-    setAiResponse(null);
+    setDoneItems([]);
     setErrorMessage(null);
 
     try {
@@ -98,17 +109,57 @@ export function useUpload(): UseUploadReturn {
       if (signedUrlError) {
         throw new Error(`Signed URL error: ${signedUrlError.message}`);
       }
-      const { error: dbError } = await supabase.from("Uploads").insert({
-        user_id: userId,
-        image_url: signedUrlData.signedUrl,
-        ai_response: rawAiResponse,
-      });
 
-      if (dbError) {
-        throw new Error(`Database error: ${dbError.message}`);
+      const { data: uploadData, error: dbError } = await supabase
+        .from("Uploads")
+        .insert({
+          user_id: userId,
+          image_url: signedUrlData.signedUrl,
+          ai_response: rawAiResponse,
+        })
+        .select("id")
+        .single();
+
+      if (dbError || !uploadData) {
+        throw new Error(`Database error: ${dbError?.message ?? "No data returned from Uploads insert"}`);
       }
 
-      setAiResponse(rawAiResponse);
+      const rawContent: string = rawAiResponse.choices[0].message.content;
+      const cleaned = stripMarkdownFences(rawContent);
+
+      let tasks: Array<{ text: string }>;
+      try {
+        const parsed = JSON.parse(cleaned);
+        tasks = parsed.tasks;
+      } catch {
+        throw new Error("Failed to parse AI response JSON");
+      }
+
+      const { data: listData, error: listError } = await supabase
+        .from("Lists")
+        .insert({ upload_id: uploadData.id })
+        .select("id")
+        .single();
+
+      if (listError || !listData) {
+        throw new Error(`Lists insert error: ${listError?.message ?? "No data returned from Lists insert"}`);
+      }
+
+      const doneItemRows = tasks.map((task) => ({
+        list_id: listData.id,
+        text: task.text,
+      }));
+
+      const { data: insertedItems, error: doneItemsError } = await supabase
+        .from("DoneItems")
+        .insert(doneItemRows)
+        .select("id, text");
+
+      if (doneItemsError || !insertedItems) {
+        throw new Error(`DoneItems insert error: ${doneItemsError?.message ?? "No data returned from DoneItems insert"}`);
+      }
+
+      setDoneItems(insertedItems);
       setStatus("success");
     } catch (err) {
       setErrorMessage(
@@ -120,9 +171,9 @@ export function useUpload(): UseUploadReturn {
 
   const reset = () => {
     setStatus("idle");
-    setAiResponse(null);
+    setDoneItems([]);
     setErrorMessage(null);
   };
 
-  return { upload, reset, status, aiResponse, errorMessage };
+  return { upload, reset, status, doneItems, errorMessage };
 }

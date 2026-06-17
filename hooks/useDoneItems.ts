@@ -1,0 +1,57 @@
+
+// hooks/useDoneItems.ts
+
+import { useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
+
+interface DoneItem {
+  id: string;
+  text: string;
+}
+
+type UpdateStatus = "idle" | "saving" | "error";
+
+interface UseDoneItemsReturn {
+  items: DoneItem[];
+  handleTextChange: (id: string, text: string) => void;
+  handleBlur: (id: string) => Promise<void>;
+  updateStatus: UpdateStatus;
+  updateError: string | null;
+}
+
+export function useDoneItems(initialItems: DoneItem[]): UseDoneItemsReturn {
+  const [items, setItems] = useState<DoneItem[]>(initialItems);
+  const [updateStatus, setUpdateStatus] = useState<UpdateStatus>("idle");
+  const [updateError, setUpdateError] = useState<string | null>(null);
+
+  const handleTextChange = (id: string, text: string) => {
+    setItems((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, text } : item)),
+    );
+  };
+
+  const handleBlur = async (id: string) => {
+    const current = items.find((item) => item.id === id);
+    const original = initialItems.find((item) => item.id === id);
+
+    if (!current || !original || current.text === original.text) return;
+
+    setUpdateStatus("saving");
+    setUpdateError(null);
+
+    const { error } = await supabase
+      .from("DoneItems")
+      .update({ text: current.text })
+      .eq("id", id);
+
+    if (error) {
+      setUpdateStatus("error");
+      setUpdateError(error.message);
+      return;
+    }
+
+    setUpdateStatus("idle");
+  };
+
+  return { items, handleTextChange, handleBlur, updateStatus, updateError };
+}
