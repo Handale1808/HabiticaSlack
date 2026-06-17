@@ -1,4 +1,3 @@
-
 // hooks/useDoneItems.ts
 
 import { useState, useEffect } from "react";
@@ -8,6 +7,8 @@ interface DoneItem {
   id: string;
   text: string;
   habitica_tag: string | null;
+  habitica_send: boolean | null;
+  habitica_id: string | null;
 }
 
 type UpdateStatus = "idle" | "saving" | "error";
@@ -17,6 +18,7 @@ interface UseDoneItemsReturn {
   handleTextChange: (id: string, text: string) => void;
   handleBlur: (id: string) => Promise<void>;
   handleTagChange: (id: string, tagId: string | null) => Promise<void>;
+  markAsSent: (id: string, habiticaId: string) => void;
   updateStatus: UpdateStatus;
   updateError: string | null;
 }
@@ -27,10 +29,10 @@ export function useDoneItems(initialItems: DoneItem[]): UseDoneItemsReturn {
   const [updateError, setUpdateError] = useState<string | null>(null);
 
   useEffect(() => {
-  if (initialItems.length > 0) {
-    setItems(initialItems);
-  }
-}, [initialItems]);
+    if (initialItems.length > 0) {
+      setItems(initialItems);
+    }
+  }, [initialItems]);
 
   const handleTextChange = (id: string, text: string) => {
     setItems((prev) =>
@@ -62,26 +64,46 @@ export function useDoneItems(initialItems: DoneItem[]): UseDoneItemsReturn {
   };
 
   const handleTagChange = async (id: string, tagId: string | null) => {
-  setItems((prev) =>
-    prev.map((item) => (item.id === id ? { ...item, habitica_tag: tagId } : item)),
-  );
+    setItems((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, habitica_tag: tagId } : item,
+      ),
+    );
 
-  setUpdateStatus("saving");
-  setUpdateError(null);
+    setUpdateStatus("saving");
+    setUpdateError(null);
 
-  const { error } = await supabase
-    .from("DoneItems")
-    .update({ habitica_tag: tagId })
-    .eq("id", id);
+    const { error } = await supabase
+      .from("DoneItems")
+      .update({ habitica_tag: tagId })
+      .eq("id", id);
 
-  if (error) {
-    setUpdateStatus("error");
-    setUpdateError(error.message);
-    return;
-  }
+    if (error) {
+      setUpdateStatus("error");
+      setUpdateError(error.message);
+      return;
+    }
 
-  setUpdateStatus("idle");
-};
+    setUpdateStatus("idle");
+  };
 
-  return { items, handleTextChange, handleBlur, handleTagChange, updateStatus, updateError };
+  const markAsSent = (id: string, habiticaId: string) => {
+    setItems((prev) =>
+      prev.map((item) =>
+        item.id === id
+          ? { ...item, habitica_send: true, habitica_id: habiticaId }
+          : item,
+      ),
+    );
+  };
+
+  return {
+    items,
+    handleTextChange,
+    handleBlur,
+    handleTagChange,
+    markAsSent,
+    updateStatus,
+    updateError,
+  };
 }

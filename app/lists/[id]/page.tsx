@@ -9,11 +9,14 @@ import { useDoneItems } from "@/hooks/useDoneItems";
 import { DoneItemRow } from "@/components/DoneItemRow";
 import { useUser } from "@/context/UserContext";
 import { useHabiticaTags } from "@/hooks/useHabiticaTags";
+import { useHabiticaSend } from "@/hooks/useHabiticaSend";
 
 interface DoneItem {
   id: string;
   text: string;
   habitica_tag: string | null;
+  habitica_send: boolean | null;
+  habitica_id: string | null;
 }
 
 export default function ListDetailPage({
@@ -34,7 +37,7 @@ export default function ListDetailPage({
 
       const { data, error } = await supabase
         .from("DoneItems")
-        .select("id, text, habitica_tag")
+        .select("id, text, habitica_tag, habitica_send, habitica_id")
         .eq("list_id", id)
         .order("created_at", { ascending: true });
 
@@ -56,6 +59,7 @@ export default function ListDetailPage({
     handleTextChange,
     handleBlur,
     handleTagChange,
+    markAsSent,
     updateStatus,
     updateError,
   } = useDoneItems(initialItems);
@@ -65,6 +69,25 @@ export default function ListDetailPage({
     currentUser?.habitica_user_id ?? "",
     currentUser?.habitica_api_token ?? "",
   );
+
+  const [isBulkSending, setIsBulkSending] = useState(false);
+
+  console.log("habitica creds", currentUser?.habitica_user_id, currentUser?.habitica_api_token);
+
+  const { sendItem, sendingIds, sendErrors } = useHabiticaSend(
+    currentUser?.habitica_user_id ?? "",
+    currentUser?.habitica_api_token ?? "",
+    markAsSent,
+  );
+
+  const handleSendAll = async () => {
+    setIsBulkSending(true);
+    const unsent = items.filter((item) => item.habitica_send !== true);
+    for (const item of unsent) {
+      await sendItem(item);
+    }
+    setIsBulkSending(false);
+  };
 
   return (
     <main className="min-h-screen flex flex-col items-center gap-8 p-8">
@@ -95,9 +118,16 @@ export default function ListDetailPage({
               text={item.text}
               tagId={item.habitica_tag}
               tags={tags}
+              habiticaSend={item.habitica_send}
+              isSending={sendingIds.has(item.id)}
+              sendError={sendErrors[item.id] ?? null}
               onChange={handleTextChange}
               onBlur={handleBlur}
               onTagChange={handleTagChange}
+              onSend={(id) => {
+                const item = items.find((i) => i.id === id);
+                if (item) sendItem(item);
+              }}
             />
           ))}
           {updateStatus === "saving" && (
@@ -106,6 +136,17 @@ export default function ListDetailPage({
           {updateStatus === "error" && (
             <p className="text-red-500 text-sm">{updateError}</p>
           )}
+
+          <button
+            onClick={handleSendAll}
+            disabled={
+              isBulkSending ||
+              items.every((item) => item.habitica_send === true)
+            }
+            className="border border-gray-700 rounded px-4 py-2 text-sm disabled:opacity-50 hover:bg-gray-900 transition-colors"
+          >
+            {isBulkSending ? "Sending..." : "Send all to Habitica"}
+          </button>
         </div>
       )}
     </main>

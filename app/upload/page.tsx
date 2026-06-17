@@ -9,6 +9,7 @@ import { useUser } from "@/context/UserContext";
 import { useDoneItems } from "@/hooks/useDoneItems";
 import { DoneItemRow } from "@/components/DoneItemRow";
 import { useHabiticaTags } from "@/hooks/useHabiticaTags";
+import { useHabiticaSend } from "@/hooks/useHabiticaSend";
 
 export default function UploadPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -35,9 +36,27 @@ export default function UploadPage() {
     handleTextChange,
     handleBlur,
     handleTagChange,
+    markAsSent,
     updateStatus,
     updateError,
   } = useDoneItems(doneItems);
+
+  const [isBulkSending, setIsBulkSending] = useState(false);
+
+  const { sendItem, sendingIds, sendErrors } = useHabiticaSend(
+    currentUser?.habitica_user_id ?? "",
+    currentUser?.habitica_api_token ?? "",
+    markAsSent,
+  );
+
+  const handleSendAll = async () => {
+    setIsBulkSending(true);
+    const unsent = items.filter((item) => item.habitica_send !== true);
+    for (const item of unsent) {
+      await sendItem(item);
+    }
+    setIsBulkSending(false);
+  };
 
   useEffect(() => {
     if (!currentUser) {
@@ -145,9 +164,16 @@ export default function UploadPage() {
               text={item.text}
               tagId={item.habitica_tag}
               tags={tags}
+              habiticaSend={item.habitica_send}
+              isSending={sendingIds.has(item.id)}
+              sendError={sendErrors[item.id] ?? null}
               onChange={handleTextChange}
               onBlur={handleBlur}
               onTagChange={handleTagChange}
+              onSend={(id) => {
+                const found = items.find((i) => i.id === id);
+                if (found) sendItem(found);
+              }}
             />
           ))}
           {updateStatus === "error" && (
@@ -161,6 +187,16 @@ export default function UploadPage() {
             className="bg-black text-white rounded px-4 py-2 text-sm mt-2"
           >
             Upload another
+          </button>
+          <button
+            onClick={handleSendAll}
+            disabled={
+              isBulkSending ||
+              items.every((item) => item.habitica_send === true)
+            }
+            className="border border-gray-700 rounded px-4 py-2 text-sm disabled:opacity-50 hover:bg-gray-900 transition-colors"
+          >
+            {isBulkSending ? "Sending..." : "Send all to Habitica"}
           </button>
         </div>
       )}

@@ -9,6 +9,8 @@ interface DoneItem {
   id: string;
   text: string;
   habitica_tag: string | null;
+  habitica_send: boolean | null;
+  habitica_id: string | null;
 }
 
 interface UseUploadReturn {
@@ -155,7 +157,7 @@ export function useUpload(): UseUploadReturn {
       const { data: insertedItems, error: doneItemsError } = await supabase
         .from("DoneItems")
         .insert(doneItemRows)
-        .select("id, text, habitica_tag");
+        .select("id, text, habitica_tag, habitica_send, habitica_id");
 
       if (doneItemsError || !insertedItems) {
         throw new Error(`DoneItems insert error: ${doneItemsError?.message ?? "No data returned from DoneItems insert"}`);
