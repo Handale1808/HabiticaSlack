@@ -7,6 +7,8 @@ import { createContext, useContext, useState } from 'react'
 interface User {
   id: string
   name: string
+  habitica_user_id: string
+  habitica_api_token: string
 }
 
 interface UserContextValue {

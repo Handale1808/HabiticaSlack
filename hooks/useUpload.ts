@@ -11,7 +11,7 @@ interface DoneItem {
 }
 
 interface UseUploadReturn {
-  upload: (file: File, userId: string) => Promise<void>;
+  upload: (file: File, userId: string, habiticaTagId?: string | null) => Promise<void>
   reset: () => void;
   status: UploadStatus;
   doneItems: DoneItem[];
@@ -43,7 +43,7 @@ export function useUpload(): UseUploadReturn {
   const [doneItems, setDoneItems] = useState<DoneItem[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const upload = async (file: File, userId: string) => {
+  const upload = async (file: File, userId: string, habiticaTagId: string | null = null) => {
     setStatus("loading");
     setDoneItems([]);
     setErrorMessage(null);
@@ -146,9 +146,10 @@ export function useUpload(): UseUploadReturn {
       }
 
       const doneItemRows = tasks.map((task) => ({
-        list_id: listData.id,
-        text: task.text,
-      }));
+  list_id: listData.id,
+  text: task.text,
+  habitica_tag: habiticaTagId,
+}))
 
       const { data: insertedItems, error: doneItemsError } = await supabase
         .from("DoneItems")
