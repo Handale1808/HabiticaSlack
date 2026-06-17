@@ -32,7 +32,7 @@ type EnrichmentStatus =
   | "error";
 
 interface UseSlackSendReturn {
-  triggerEnrichment: (itemsOverride?: DoneItem[]) => Promise<void>;
+triggerEnrichment: (itemsOverride?: DoneItem[], listIdOverride?: string) => Promise<void>;
   enrichedItems: EnrichedItem[];
   summary: string | null;
   availableCategories: string[];
@@ -58,9 +58,11 @@ export function useSlackSend(
     useState<EnrichmentStatus>("idle");
   const [enrichmentError, setEnrichmentError] = useState<string | null>(null);
 
-  const triggerEnrichment = async (
-    itemsOverride?: DoneItem[],
-  ): Promise<void> => {
+const triggerEnrichment = async (
+  itemsOverride?: DoneItem[],
+  listIdOverride?: string,
+): Promise<void> => {
+  const workingListId = listIdOverride ?? listId;
     const workingItems = Array.isArray(itemsOverride)
       ? itemsOverride
       : Array.isArray(items)
@@ -80,7 +82,7 @@ export function useSlackSend(
       const { data: summaryData } = await supabase
         .from("Lists")
         .select("summary")
-        .eq("id", listId)
+        .eq("id", workingListId)
         .single();
 
       if (summaryData?.summary) {
@@ -210,7 +212,7 @@ ${JSON.stringify(workingItems.map((i) => ({ id: i.id, text: i.text })))}`;
       supabase
         .from("Lists")
         .update({ summary: parsed.summary })
-        .eq("id", listId)
+        .eq("id", workingListId)
         .then(({ error }) => {
           if (error) console.error("Failed to save summary:", error.message);
         });

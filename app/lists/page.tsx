@@ -93,7 +93,7 @@ export default function ListsPage() {
 
     const fetched = data ?? [];
     setSlackItems(fetched);
-    await triggerEnrichment(fetched);
+    await triggerEnrichment(fetched, listId);
   };
 
   return (

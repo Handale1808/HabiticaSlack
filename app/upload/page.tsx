@@ -11,7 +11,8 @@ import { DoneItemRow } from "@/components/DoneItemRow";
 import { useHabiticaTags } from "@/hooks/useHabiticaTags";
 import { useHabiticaSend } from "@/hooks/useHabiticaSend";
 import { useSlackSend } from "@/hooks/useSlackSend";
-import { SlackPreview } from "@/components/SlackPreview";
+import { SendAllButton } from "@/components/SendAllButton";
+import { SlackSendBlock } from "@/components/SlackSendBlock";
 
 export default function UploadPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -20,7 +21,7 @@ export default function UploadPage() {
 
   const { upload, reset, status, doneItems, listId, errorMessage } =
     useUpload();
-  const { currentUser } = useUser();
+  const { currentUser, isRehydrating } = useUser();
   const router = useRouter();
 
   const {
@@ -44,8 +45,6 @@ export default function UploadPage() {
     updateError,
   } = useDoneItems(doneItems);
 
-  const [isBulkSending, setIsBulkSending] = useState(false);
-
   const { sendItem, sendingIds, sendErrors } = useHabiticaSend(
     currentUser?.habitica_user_id ?? "",
     currentUser?.habitica_api_token ?? "",
@@ -64,22 +63,13 @@ export default function UploadPage() {
     enrichmentError,
   } = useSlackSend(listId ?? "", items);
 
-  const handleSendAll = async () => {
-    setIsBulkSending(true);
-    const unsent = items.filter((item) => item.habitica_send !== true);
-    for (const item of unsent) {
-      await sendItem(item);
-      await new Promise((resolve) => setTimeout(resolve, 500));
-    }
-    setIsBulkSending(false);
-  };
-
   useEffect(() => {
-    if (!currentUser) {
+    if (!isRehydrating && !currentUser) {
       router.push("/login");
     }
-  }, [currentUser, router]);
+  }, [currentUser, isRehydrating, router]);
 
+  if (isRehydrating) return null;
   if (!currentUser) return null;
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -204,52 +194,19 @@ export default function UploadPage() {
           >
             Upload another
           </button>
-          <button
-            onClick={handleSendAll}
-            disabled={
-              isBulkSending ||
-              items.every((item) => item.habitica_send === true)
-            }
-            className="border border-gray-700 rounded px-4 py-2 text-sm disabled:opacity-50 hover:bg-gray-900 transition-colors"
-          >
-            {isBulkSending ? "Sending..." : "Send all to Habitica"}
-          </button>
-          <button
-            onClick={triggerEnrichment}
-            disabled={
-              !listId ||
-              enrichmentStatus === "loading" ||
-              enrichmentStatus === "success"
-            }
-            className="border border-gray-700 rounded px-4 py-2 text-sm disabled:opacity-50 hover:bg-gray-900 transition-colors"
-          >
-            {enrichmentStatus === "loading"
-              ? "Preparing..."
-              : enrichmentStatus === "success"
-                ? "Sent to Slack"
-                : "Send to Slack"}
-          </button>
-
-          {(enrichmentStatus === "preview" ||
-            enrichmentStatus === "sending" ||
-            enrichmentStatus === "error") &&
-            enrichedItems.length > 0 &&
-            summary && (
-              <SlackPreview
-                enrichedItems={enrichedItems}
-                summary={summary}
-                availableCategories={availableCategories}
-                onCategoryChange={handleCategoryChange}
-                onConfirm={confirmSend}
-                onCancel={cancelPreview}
-                isSending={enrichmentStatus === "sending"}
-                sendError={enrichmentError}
-              />
-            )}
-
-          {enrichmentStatus === "success" && (
-            <p className="text-gray-500 text-sm">Successfully sent to Slack.</p>
-          )}
+          <SendAllButton items={items} sendItem={sendItem} />
+          <SlackSendBlock
+            enrichmentStatus={enrichmentStatus}
+            enrichedItems={enrichedItems}
+            summary={summary}
+            availableCategories={availableCategories}
+            onCategoryChange={handleCategoryChange}
+            onTrigger={() => triggerEnrichment(items)}
+            onConfirm={confirmSend}
+            onCancel={cancelPreview}
+            sendError={enrichmentError}
+            disabled={!listId}
+          />
         </div>
       )}
     </main>
