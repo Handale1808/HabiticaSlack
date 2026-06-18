@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { useUser } from "@/context/UserContext";
 
 interface DoneItem {
   id: string;
@@ -22,6 +23,7 @@ export function useHabiticaSend(
 ): UseHabiticaSendReturn {
   const [sendingIds, setSendingIds] = useState<Set<string>>(new Set());
   const [sendErrors, setSendErrors] = useState<Record<string, string>>({});
+  const { refreshHabiticaStats } = useUser();
 
   const sendItem = async (item: DoneItem): Promise<void> => {
     setSendingIds((prev) => new Set(prev).add(item.id));
@@ -83,6 +85,7 @@ export function useHabiticaSend(
       }
 
       onSent(item.id, habiticaTaskId);
+      refreshHabiticaStats();
     } catch (err) {
       setSendErrors((prev) => ({
         ...prev,

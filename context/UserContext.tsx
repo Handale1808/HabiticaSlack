@@ -9,6 +9,7 @@ import {
   useEffect,
   useCallback,
 } from "react";
+import { useHabiticaStats } from "@/hooks/useHabiticaStats";
 
 interface User {
   id: string;
@@ -21,6 +22,10 @@ interface UserContextValue {
   currentUser: User | null;
   setCurrentUser: (user: User) => void;
   isRehydrating: boolean;
+  habiticaStats: ReturnType<typeof useHabiticaStats>["stats"];
+  isHabiticaStatsLoading: boolean;
+  habiticaStatsError: string | null;
+  refreshHabiticaStats: () => void;
 }
 
 const UserContext = createContext<UserContextValue | null>(null);
@@ -30,6 +35,16 @@ const STORAGE_KEY = "current_user";
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUserState] = useState<User | null>(null);
   const [isRehydrating, setIsRehydrating] = useState(true);
+
+  const {
+    stats: habiticaStats,
+    isLoading: isHabiticaStatsLoading,
+    error: habiticaStatsError,
+    refreshStats: refreshHabiticaStats,
+  } = useHabiticaStats(
+    currentUser?.habitica_user_id ?? "",
+    currentUser?.habitica_api_token ?? "",
+  );
 
   useEffect(() => {
     try {
@@ -67,7 +82,15 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <UserContext.Provider
-      value={{ currentUser, setCurrentUser, isRehydrating }}
+      value={{
+        currentUser,
+        setCurrentUser,
+        isRehydrating,
+        habiticaStats,
+        isHabiticaStatsLoading,
+        habiticaStatsError,
+        refreshHabiticaStats,
+      }}
     >
       {children}
     </UserContext.Provider>
