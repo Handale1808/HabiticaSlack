@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { fileToBase64, stripMarkdownFences } from "@/lib/uploadUtils";
+import { format } from "date-fns";
 
 type UploadStatus = "idle" | "loading" | "success" | "error";
 
@@ -19,6 +20,7 @@ interface UseUploadReturn {
     file: File,
     userId: string,
     habiticaTagId?: string | null,
+    completedAt?: Date | null,
   ) => Promise<void>;
   reset: () => void;
   status: UploadStatus;
@@ -37,6 +39,7 @@ export function useUpload(): UseUploadReturn {
     file: File,
     userId: string,
     habiticaTagId: string | null = null,
+    completedAt: Date | null = null,
   ) => {
     setStatus("loading");
     setDoneItems([]);
@@ -168,7 +171,10 @@ export function useUpload(): UseUploadReturn {
 
       const { data: listData, error: listError } = await supabase
         .from("Lists")
-        .insert({ upload_id: uploadData.id })
+        .insert({
+          upload_id: uploadData.id,
+          completed_at: completedAt ? format(completedAt, "yyyy-MM-dd") : null,
+        })
         .select("id")
         .single();
 

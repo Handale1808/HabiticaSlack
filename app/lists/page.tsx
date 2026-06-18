@@ -9,10 +9,14 @@ import { useUser } from "@/context/UserContext";
 import { useHabiticaTags } from "@/hooks/useHabiticaTags";
 import { ManualCreateForm } from "@/components/ManualCreateForm";
 import { TrainingToggle } from "@/components/TrainingToggle";
+import { format, parseISO } from "date-fns";
+import { PhotoCreateForm } from "@/components/PhotoCreateForm";
+import { CompletedDateEditor } from "@/components/CompletedDateEditor";
 
 interface ListRow {
   id: string;
   created_at: string;
+  completed_at: string | null;
   slack_sent: boolean | null;
   use_for_training: boolean;
 }
@@ -51,6 +55,7 @@ export default function ListsPage() {
   } = useSlackSend(activeSlackListId ?? "", slackItems);
 
   const [isCreating, setIsCreating] = useState(false);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const { currentUser } = useUser();
   const {
     tags,
@@ -70,7 +75,7 @@ export default function ListsPage() {
 
       const { data, error } = await supabase
         .from("Lists")
-        .select("id, created_at, slack_sent, use_for_training")
+        .select("id, created_at, completed_at, slack_sent, use_for_training")
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -122,16 +127,43 @@ export default function ListsPage() {
     );
   };
 
+  const handleCompletedAtChange = (listId: string, newDate: Date | null) => {
+    setLists((prev) =>
+      prev.map((l) =>
+        l.id === listId
+          ? {
+              ...l,
+              completed_at: newDate ? format(newDate, "yyyy-MM-dd") : null,
+            }
+          : l,
+      ),
+    );
+  };
+
   return (
     <main className="min-h-screen flex flex-col items-center gap-8 p-8">
-      <div className="w-full max-w-sm flex items-center justify-between">
+      <div className="w-full max-w-sm flex items-center justify-between gap-2">
         <h1 className="text-2xl font-bold">Your lists</h1>
-        <button
-          onClick={() => setIsCreating((prev) => !prev)}
-          className="text-sm text-gray-400 hover:text-white transition-colors"
-        >
-          {isCreating ? "Cancel" : "New manual list"}
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={() => {
+              setIsUploadingPhoto(false);
+              setIsCreating((prev) => !prev);
+            }}
+            className="text-sm text-gray-400 hover:text-white transition-colors"
+          >
+            {isCreating ? "Cancel" : "New manual list"}
+          </button>
+          <button
+            onClick={() => {
+              setIsCreating(false);
+              setIsUploadingPhoto((prev) => !prev);
+            }}
+            className="text-sm text-gray-400 hover:text-white transition-colors"
+          >
+            {isUploadingPhoto ? "Cancel" : "New list from photo"}
+          </button>
+        </div>
       </div>
 
       {isCreating && (
@@ -143,6 +175,20 @@ export default function ListsPage() {
             createLoading={createLoading}
             tagsError={tagsError}
             onCancel={() => setIsCreating(false)}
+          />
+        </div>
+      )}
+
+      {isUploadingPhoto && currentUser && (
+        <div className="w-full max-w-sm">
+          <PhotoCreateForm
+            tags={tags}
+            createTag={createTag}
+            tagsLoading={tagsLoading}
+            createLoading={createLoading}
+            tagsError={tagsError}
+            userId={currentUser.id}
+            onCancel={() => setIsUploadingPhoto(false)}
           />
         </div>
       )}
@@ -163,16 +209,28 @@ export default function ListsPage() {
               <div className="flex gap-2">
                 <button
                   onClick={() => router.push(`/lists/${list.id}`)}
-                  className="flex-1 border border-gray-700 rounded px-4 py-3 text-sm text-left hover:bg-gray-900 transition-colors"
+                  className="flex-1 border border-gray-700 rounded px-4 py-3 text-sm text-left hover:bg-gray-900 transition-colors flex flex-col gap-0.5"
                 >
-                  {new Date(list.created_at).toLocaleString("en-ZA", {
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+                  {list.completed_at && (
+                    <span>
+                      {format(parseISO(list.completed_at), "d MMMM yyyy")}
+                    </span>
+                  )}
+                  <span className="text-xs text-gray-500">
+                    {new Date(list.created_at).toLocaleString("en-ZA", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
                 </button>
+                <CompletedDateEditor
+                  listId={list.id}
+                  value={list.completed_at ? parseISO(list.completed_at) : null}
+                  onChange={(date) => handleCompletedAtChange(list.id, date)}
+                />
                 {list.slack_sent ? (
                   <span className="border border-gray-700 rounded px-4 py-3 text-sm text-gray-500">
                     Sent

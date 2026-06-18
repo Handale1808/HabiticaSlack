@@ -16,6 +16,8 @@ import { SlackSendBlock } from "@/components/SlackSendBlock";
 import { AppendUploadButton } from "@/components/AppendUploadButton";
 import { AddItemsButton } from "@/components/AddItemsButton";
 import { TrainingToggle } from "@/components/TrainingToggle";
+import { format, parseISO } from "date-fns";
+import { CompletedDateEditor } from "@/components/CompletedDateEditor";
 
 interface DoneItem {
   id: string;
@@ -36,6 +38,7 @@ export default function ListDetailPage({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [useForTraining, setUseForTraining] = useState(false);
+  const [completedAt, setCompletedAt] = useState<Date | null>(null);
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -58,12 +61,15 @@ export default function ListDetailPage({
 
       const { data: listData } = await supabase
         .from("Lists")
-        .select("use_for_training")
+        .select("use_for_training, completed_at")
         .eq("id", id)
         .single();
 
       if (listData) {
         setUseForTraining(listData.use_for_training);
+        setCompletedAt(
+          listData.completed_at ? parseISO(listData.completed_at) : null,
+        );
       }
 
       setInitialItems(data ?? []);
@@ -134,6 +140,21 @@ export default function ListDetailPage({
       </div>
 
       <h1 className="text-2xl font-bold">Done items</h1>
+
+      {!isLoading && (
+        <div className="w-full max-w-lg flex items-center gap-2">
+          {completedAt && (
+            <span className="text-sm text-gray-400">
+              {format(completedAt, "d MMMM yyyy")}
+            </span>
+          )}
+          <CompletedDateEditor
+            listId={id}
+            value={completedAt}
+            onChange={setCompletedAt}
+          />
+        </div>
+      )}
 
       {!isLoading && currentUser && (
         <div className="w-full max-w-lg flex flex-col gap-2">

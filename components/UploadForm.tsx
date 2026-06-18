@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { HabiticaTagSelector } from "@/components/HabiticaTagSelector";
+import { DateField } from "@/components/DateField";
 
 interface Tag {
   id: string;
@@ -14,9 +15,16 @@ interface UploadFormProps {
   tagsLoading: boolean;
   createLoading: boolean;
   tagsError: string | null;
-  onUpload: (file: File, tagId: string | null) => void;
+  onUpload: (
+    file: File,
+    tagId: string | null,
+    completedAt: Date | null,
+  ) => void;
   isLoading: boolean;
   error: string | null;
+  showDateField?: boolean;
+  selectedDate?: Date | null;
+  onDateChange?: (date: Date | null) => void;
 }
 
 export function UploadForm({
@@ -28,6 +36,9 @@ export function UploadForm({
   onUpload,
   isLoading,
   error,
+  showDateField = false,
+  selectedDate = null,
+  onDateChange,
 }: UploadFormProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
@@ -38,7 +49,7 @@ export function UploadForm({
 
   const handleSubmit = () => {
     if (!selectedFile) return;
-    onUpload(selectedFile, selectedTagId);
+    onUpload(selectedFile, selectedTagId, selectedDate);
   };
 
   return (
@@ -52,6 +63,14 @@ export function UploadForm({
         createLoading={createLoading}
         error={tagsError}
       />
+      {showDateField && (
+        <DateField
+          variant="inline"
+          value={selectedDate}
+          onChange={(date) => onDateChange?.(date)}
+          label="Done on"
+        />
+      )}
       <input
         type="file"
         accept="image/*"

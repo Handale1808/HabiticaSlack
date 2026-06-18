@@ -41,7 +41,11 @@ export function AppendUploadButton({
   const [isExpanded, setIsExpanded] = useState(false);
   const { appendUpload, status, errorMessage } = useAppendUpload();
 
-  const handleUpload = async (file: File, tagId: string | null) => {
+  const handleUpload = async (
+    file: File,
+    tagId: string | null,
+    _completedAt: Date | null,
+  ) => {
     const newItems = await appendUpload(file, userId, listId, tagId);
     if (newItems.length > 0) {
       onAppended(newItems);

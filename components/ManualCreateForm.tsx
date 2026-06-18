@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useManualCreate } from "@/hooks/useManualCreate";
 import { HabiticaTagSelector } from "@/components/HabiticaTagSelector";
+import { DateField } from "@/components/DateField";
 
 interface Tag {
   id: string;
@@ -30,6 +31,7 @@ export function ManualCreateForm({
   const router = useRouter();
   const [rawText, setRawText] = useState("");
   const [defaultTagId, setDefaultTagId] = useState<string | null>(null);
+  const [completedAt, setCompletedAt] = useState<Date | null>(() => new Date());
 
   const {
     step,
@@ -71,6 +73,12 @@ export function ManualCreateForm({
             createLoading={createLoading}
             error={tagsError}
           />
+          <DateField
+            variant="inline"
+            value={completedAt}
+            onChange={setCompletedAt}
+            label="Done on"
+          />
           <textarea
             value={rawText}
             onChange={(e) => setRawText(e.target.value)}
@@ -80,8 +88,8 @@ export function ManualCreateForm({
           />
           <div className="flex gap-2">
             <button
-              onClick={handleReview}
-              disabled={!rawText.trim()}
+              onClick={() => saveList(completedAt)}
+              disabled={status === "saving"}
               className="border border-gray-700 rounded px-4 py-2 text-sm disabled:opacity-50 hover:bg-gray-900 transition-colors"
             >
               Review

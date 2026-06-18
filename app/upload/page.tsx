@@ -20,6 +20,9 @@ export default function UploadPage() {
     useUpload();
   const { currentUser, isRehydrating } = useUser();
   const router = useRouter();
+  const [selectedDate, setSelectedDate] = useState<Date | null>(
+    () => new Date(),
+  );
 
   const {
     tags,
@@ -94,9 +97,14 @@ export default function UploadPage() {
             tagsLoading={tagsLoading}
             createLoading={createLoading}
             tagsError={tagsError}
-            onUpload={(file, tagId) => upload(file, currentUser.id, tagId)}
+            onUpload={(file, tagId, completedAt) =>
+              upload(file, currentUser.id, tagId, completedAt)
+            }
             isLoading={status === "loading"}
             error={errorMessage}
+            showDateField
+            selectedDate={selectedDate}
+            onDateChange={setSelectedDate}
           />
         </div>
       )}

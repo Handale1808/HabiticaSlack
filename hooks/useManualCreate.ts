@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { format } from "date-fns";
 
 type ManualCreateStep = "input" | "review";
 type ManualCreateStatus = "idle" | "saving" | "success" | "error";
@@ -18,7 +19,7 @@ interface UseManualCreateReturn {
   newListId: string | null;
   handleTextareaSubmit: (rawText: string, defaultTagId: string | null) => void;
   handleDraftTagChange: (draftId: string, tagId: string | null) => void;
-  saveList: () => Promise<void>;
+  saveList: (completedAt: Date | null) => Promise<void>;
   resetToInput: () => void;
 }
 
@@ -59,21 +60,21 @@ export function useManualCreate(): UseManualCreateReturn {
     );
   };
 
-  const saveList = async (): Promise<void> => {
+  const saveList = async (completedAt: Date | null): Promise<void> => {
     setStatus("saving");
     setError(null);
 
     const { data: listData, error: listError } = await supabase
       .from("Lists")
-      .insert({})
+      .insert({
+        completed_at: completedAt ? format(completedAt, "yyyy-MM-dd") : null,
+      })
       .select("id")
       .single();
 
     if (listError || !listData) {
       setStatus("error");
-      setError(
-        listError?.message ?? "No data returned from Lists insert",
-      );
+      setError(listError?.message ?? "No data returned from Lists insert");
       return;
     }
 
