@@ -142,7 +142,7 @@ export default function ListsPage() {
   return (
     <main className="flex min-h-screen flex-col items-center gap-8 p-8">
       <div className="flex w-full max-w-sm items-center justify-between gap-2">
-        <h1 className="font-display text-3xl text-bark">Your lists</h1>
+        <h1 className="font-display text-3xl text-bark">your lists</h1>
         <div className="flex gap-2">
           <Button
             variant="ghost"
@@ -151,7 +151,7 @@ export default function ListsPage() {
               setIsCreating((prev) => !prev);
             }}
           >
-            {isCreating ? "Cancel" : "New manual list"}
+            {isCreating ? "cancel" : "new manual list"}
           </Button>
           <Button
             variant="ghost"
@@ -160,7 +160,7 @@ export default function ListsPage() {
               setIsUploadingPhoto((prev) => !prev);
             }}
           >
-            {isUploadingPhoto ? "Cancel" : "New list from photo"}
+            {isUploadingPhoto ? "cancel" : "new list from photo"}
           </Button>
         </div>
       </div>

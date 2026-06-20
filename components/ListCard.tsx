@@ -60,7 +60,7 @@ export function ListCard({
       >
         <span className="font-display text-2xl text-bark">
           {list.completed_at
-            ? format(parseISO(list.completed_at), "d MMMM yyyy")
+            ? format(parseISO(list.completed_at), "d MMMM yyyy").toLowerCase()
             : "no completion date set"}
         </span>
         <span className="text-xs text-bark/50">
@@ -71,7 +71,7 @@ export function ListCard({
             year: "numeric",
             hour: "2-digit",
             minute: "2-digit",
-          })}
+          }).toLowerCase()}
         </span>
       </button>
 
