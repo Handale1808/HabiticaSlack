@@ -1,4 +1,6 @@
 import { EnrichedItem } from "@/hooks/useSlackSend";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 
 interface SlackPreviewProps {
   enrichedItems: EnrichedItem[];
@@ -47,10 +49,10 @@ function CategoryCombobox({
             onChange(inputValue);
           }, 150);
         }}
-        className="border border-gray-700 rounded px-2 py-1 text-xs bg-transparent focus:outline-none focus:ring-1 focus:ring-gray-500 w-40"
+        className="w-40 rounded-lg border-2 border-bark/30 bg-parchment px-2 py-1 text-xs text-bark shadow-sm focus:outline-none focus:ring-2 focus:ring-moss"
       />
       {isOpen && filtered.length > 0 && (
-        <ul className="absolute z-10 top-full left-0 mt-1 w-full border border-gray-700 rounded bg-black">
+        <ul className="absolute z-10 top-full left-0 mt-1 w-full rounded-lg border-2 border-bark/30 bg-parchment shadow-lg">
           {filtered.map((cat) => (
             <li
               key={cat}
@@ -59,7 +61,7 @@ function CategoryCombobox({
                 setIsOpen(false);
                 onChange(cat);
               }}
-              className="px-2 py-1 text-xs cursor-pointer hover:bg-gray-900"
+              className="cursor-pointer px-2 py-1 text-xs text-bark hover:bg-parchment-dark"
             >
               {cat}
             </li>
@@ -91,13 +93,13 @@ export function SlackPreview({
   );
 
   return (
-    <div className="flex flex-col gap-4 border border-gray-700 rounded p-4 mt-2">
+    <Card className="mt-2 flex flex-col gap-4">
       {Object.entries(grouped).map(([category, categoryItems]) => (
         <div key={category} className="flex flex-col gap-2">
-          <p className="text-sm font-semibold">{category}</p>
+          <p className="text-sm font-semibold text-bark">{category}</p>
           {categoryItems.map((item) => (
-            <div key={item.id} className="flex gap-2 items-start">
-              <p className="flex-1 text-sm text-gray-300">{item.slack_text}</p>
+            <div key={item.id} className="flex items-start gap-2">
+              <p className="flex-1 text-sm text-bark/80">{item.slack_text}</p>
               <CategoryCombobox
                 value={item.category}
                 availableCategories={availableCategories}
@@ -108,28 +110,20 @@ export function SlackPreview({
         </div>
       ))}
 
-      <div className="border-t border-gray-700 pt-4">
-        <p className="text-sm text-gray-400">{summary}</p>
+      <div className="border-t border-bark/15 pt-4">
+        <p className="text-sm text-bark/70">{summary}</p>
       </div>
 
       <div className="flex gap-2">
-        <button
-          onClick={onConfirm}
-          disabled={isSending}
-          className="bg-black text-white border border-gray-700 rounded px-4 py-2 text-sm disabled:opacity-50 hover:bg-gray-900 transition-colors"
-        >
-          {isSending ? "Sending..." : "Confirm and send"}
-        </button>
-        <button
-          onClick={onCancel}
-          disabled={isSending}
-          className="border border-gray-700 rounded px-4 py-2 text-sm disabled:opacity-50 hover:bg-gray-900 transition-colors"
-        >
+        <Button onClick={onConfirm} isLoading={isSending}>
+          Confirm and send to Slack
+        </Button>
+        <Button variant="ghost" onClick={onCancel} disabled={isSending}>
           Cancel
-        </button>
+        </Button>
       </div>
 
-      {sendError && <p className="text-red-500 text-xs">{sendError}</p>}
-    </div>
+      {sendError && <p className="text-xs text-berry">{sendError}</p>}
+    </Card>
   );
 }

@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { Dropdown } from "@/components/ui/Dropdown";
+import { Button } from "@/components/ui/Button";
+import { FieldLabel } from "@/components/ui/FieldLabel";
 
 interface Tag {
   id: string;
@@ -35,42 +38,37 @@ export function HabiticaTagSelector({
     }
   };
 
+  const tagOptions = tags.map((tag) => ({ id: tag.id, label: tag.name }));
+
   return (
-    <div className="flex flex-col gap-2">
-      <select
-        value={selectedTagId ?? ""}
-        onChange={(e) => onChange(e.target.value || null)}
+    <div className="flex flex-col gap-3">
+      <Dropdown
+        options={tagOptions}
+        value={selectedTagId}
+        onChange={onChange}
+        placeholder={isLoading ? "Gathering tags..." : "Select a tag"}
         disabled={isLoading}
-        className="border border-gray-700 rounded px-4 py-2 text-sm bg-transparent focus:outline-none focus:ring-1 focus:ring-gray-500 disabled:opacity-50"
-      >
-        <option value="" disabled>
-          {isLoading ? "Loading tags..." : "Select a tag"}
-        </option>
-        {tags.map((tag) => (
-          <option key={tag.id} value={tag.id}>
-            {tag.name}
-          </option>
-        ))}
-      </select>
+      />
 
-      <div className="flex gap-2">
-        <input
-          type="text"
-          value={newTagName}
-          onChange={(e) => setNewTagName(e.target.value)}
-          placeholder="New tag name"
-          className="flex-1 border border-gray-700 rounded px-3 py-2 text-sm bg-transparent focus:outline-none focus:ring-1 focus:ring-gray-500"
-        />
-        <button
-          onClick={handleAddTag}
-          disabled={!newTagName.trim() || createLoading}
-          className="bg-black text-white rounded px-3 py-2 text-sm disabled:opacity-50 border border-gray-700"
-        >
-          {createLoading ? "..." : "Add tag"}
-        </button>
-      </div>
-
-      {error && <p className="text-red-500 text-sm">{error}</p>}
+      <FieldLabel error={error}>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={newTagName}
+            onChange={(e) => setNewTagName(e.target.value)}
+            placeholder="New tag name"
+            className="flex-1 rounded-lg border-2 border-bark/30 bg-parchment px-3 py-2 text-sm text-bark shadow-sm transition-colors placeholder:text-bark/40 focus:outline-none focus:ring-2 focus:ring-moss"
+          />
+          <Button
+            variant="secondary"
+            onClick={handleAddTag}
+            disabled={!newTagName.trim()}
+            isLoading={createLoading}
+          >
+            Add tag
+          </Button>
+        </div>
+      </FieldLabel>
     </div>
   );
 }

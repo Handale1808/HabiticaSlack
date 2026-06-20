@@ -22,7 +22,7 @@ export function Nav() {
     !!currentUser?.habitica_user_id && !!currentUser?.habitica_api_token;
 
   return (
-    <nav className="w-full border-b border-gray-800 px-8 py-4 flex justify-between items-center">
+    <nav className="w-full bg-bark border-b border-bark-light/40 px-8 py-4 flex justify-between items-center shadow-sm">
       <ul className="flex gap-6">
         {navItems.map((item) => {
           const isActive =
@@ -34,10 +34,10 @@ export function Nav() {
             <li key={item.href}>
               <Link
                 href={item.href}
-                className={`text-sm transition-colors ${
+                className={`text-sm rounded-full px-3 py-1.5 transition-colors ${
                   isActive
-                    ? "text-white font-semibold underline underline-offset-4"
-                    : "text-gray-400 hover:text-white"
+                    ? "bg-moss font-semibold text-parchment"
+                    : "text-parchment/60 hover:bg-parchment/10 hover:text-parchment"
                 }`}
               >
                 {item.label}
@@ -47,7 +47,7 @@ export function Nav() {
         })}
       </ul>
       {hasHabiticaCredentials && habiticaStats && (
-        <div className="flex items-center gap-2 text-gray-300">
+        <div className="flex items-center gap-2 text-parchment">
           <HabiticaClassIcon
             characterClass={habiticaStats.class}
             className="w-5 h-5"

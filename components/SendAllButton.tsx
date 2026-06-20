@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "@/components/ui/Button";
 
 interface DoneItem {
   id: string;
@@ -28,13 +29,19 @@ export function SendAllButton({ items, sendItem }: SendAllButtonProps) {
     setIsBulkSending(false);
   };
 
+const allSent = items.every((item) => item.habitica_send === true);
+  const unsentCount = items.filter((item) => item.habitica_send !== true).length;
+
   return (
-    <button
+    <Button
+      variant="secondary"
       onClick={handleSendAll}
-      disabled={isBulkSending || items.every((item) => item.habitica_send === true)}
-      className="border border-gray-700 rounded px-4 py-2 text-sm disabled:opacity-50 hover:bg-gray-900 transition-colors"
+      disabled={allSent}
+      isLoading={isBulkSending}
     >
-      {isBulkSending ? "Sending..." : "Send all to Habitica"}
-    </button>
+      {allSent
+        ? "All sent to Habitica"
+        : `Send ${unsentCount} ${unsentCount === 1 ? "item" : "items"} to Habitica`}
+    </Button>
   );
 }

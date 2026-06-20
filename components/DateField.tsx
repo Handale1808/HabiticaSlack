@@ -52,7 +52,7 @@ export function DateField({
   return (
     <div className="relative flex flex-col gap-1" ref={containerRef}>
       {variant === "inline" && label && (
-        <span className="text-sm text-gray-400">{label}</span>
+        <span className="text-xs font-semibold uppercase tracking-wide text-bark/70">{label}</span>
       )}
 
       {variant === "inline" ? (
@@ -60,7 +60,7 @@ export function DateField({
           type="button"
           onClick={() => setIsOpen((prev) => !prev)}
           disabled={disabled}
-          className="border border-gray-700 rounded px-3 py-2 text-sm bg-transparent text-left focus:outline-none focus:ring-1 focus:ring-gray-500 disabled:opacity-50"
+          className="rounded-lg border-2 border-bark/30 bg-parchment px-3 py-2 text-left text-sm text-bark shadow-sm transition-colors hover:border-bark/50 focus:outline-none focus:ring-2 focus:ring-moss disabled:cursor-not-allowed disabled:opacity-50"
         >
           {formattedValue ?? "Select a date"}
         </button>
@@ -70,7 +70,7 @@ export function DateField({
           onClick={() => setIsOpen((prev) => !prev)}
           disabled={disabled}
           aria-label="Edit completed date"
-          className="border border-gray-700 rounded p-2 hover:bg-gray-900 transition-colors disabled:opacity-50"
+          className="rounded-lg border-2 border-bark/30 bg-parchment p-2 text-bark transition-colors hover:border-bark/50 hover:bg-parchment-dark disabled:cursor-not-allowed disabled:opacity-50"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -89,7 +89,7 @@ export function DateField({
       )}
 
       {isOpen && (
-        <div className="absolute z-10 top-full mt-1 border border-gray-700 rounded bg-black p-2 shadow-lg">
+        <div className="absolute z-10 top-full mt-1 rounded-lg border-2 border-bark/30 bg-parchment p-3 shadow-lg">
           <DayPicker
             mode="single"
             selected={value ?? undefined}
