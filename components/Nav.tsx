@@ -22,7 +22,7 @@ export function Nav() {
     !!currentUser?.habitica_user_id && !!currentUser?.habitica_api_token;
 
   return (
-    <nav className="w-full bg-bark border-b border-bark-light/40 px-8 py-4 flex justify-between items-center shadow-sm">
+    <nav className="w-full bg-bark/50 bg-[url('/textures/wood.png')] bg-cover bg-center bg-blend-multiply border-b border-bark-light/40 px-8 py-4 flex justify-between items-center shadow-sm">
       <ul className="flex gap-6">
         {navItems.map((item) => {
           const isActive =

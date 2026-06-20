@@ -1,131 +1,180 @@
 // app/login/page.tsx
 
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useLogin } from '@/hooks/useLogin'
-import { useUser } from '@/context/UserContext'
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useLogin } from "@/hooks/useLogin";
+import { useUser } from "@/context/UserContext";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { FieldLabel } from "@/components/ui/FieldLabel";
 
 export default function LoginPage() {
-  const [nameInput, setNameInput] = useState('')
-  const [habiticaUserIdInput, setHabiticaUserIdInput] = useState('')
-  const [habiticaApiTokenInput, setHabiticaApiTokenInput] = useState('')
+  const [nameInput, setNameInput] = useState("");
+  const [habiticaUserIdInput, setHabiticaUserIdInput] = useState("");
+  const [habiticaApiTokenInput, setHabiticaApiTokenInput] = useState("");
 
-  const [credentialPromptUserId, setCredentialPromptUserId] = useState<string | null>(null)
-  const [promptHabiticaUserId, setPromptHabiticaUserId] = useState('')
-  const [promptHabiticaApiToken, setPromptHabiticaApiToken] = useState('')
+  const [credentialPromptUserId, setCredentialPromptUserId] = useState<
+    string | null
+  >(null);
+  const [promptHabiticaUserId, setPromptHabiticaUserId] = useState("");
+  const [promptHabiticaApiToken, setPromptHabiticaApiToken] = useState("");
 
-  const { createUser, updateUserCredentials, existingUsers, isLoading, error, updateLoading, updateError } = useLogin()
-  const { setCurrentUser } = useUser()
-  const router = useRouter()
+  const {
+    createUser,
+    updateUserCredentials,
+    existingUsers,
+    isLoading,
+    error,
+    updateLoading,
+    updateError,
+  } = useLogin();
+  const { setCurrentUser } = useUser();
+  const router = useRouter();
 
   const handleCreate = async () => {
-    if (!nameInput.trim() || !habiticaUserIdInput.trim() || !habiticaApiTokenInput.trim()) return
-    const user = await createUser(nameInput.trim(), habiticaUserIdInput.trim(), habiticaApiTokenInput.trim())
+    if (
+      !nameInput.trim() ||
+      !habiticaUserIdInput.trim() ||
+      !habiticaApiTokenInput.trim()
+    )
+      return;
+    const user = await createUser(
+      nameInput.trim(),
+      habiticaUserIdInput.trim(),
+      habiticaApiTokenInput.trim(),
+    );
     if (user) {
-      setCurrentUser(user)
-      router.push('/upload')
+      setCurrentUser(user);
+      router.push("/upload");
     }
-  }
+  };
 
-  const handleSelectUser = (user: { id: string; name: string; habitica_user_id: string; habitica_api_token: string }) => {
+  const handleSelectUser = (user: {
+    id: string;
+    name: string;
+    habitica_user_id: string;
+    habitica_api_token: string;
+  }) => {
     if (user.habitica_user_id && user.habitica_api_token) {
-      setCurrentUser(user)
-      router.push('/upload')
+      setCurrentUser(user);
+      router.push("/upload");
     } else {
-      setCredentialPromptUserId(user.id)
+      setCredentialPromptUserId(user.id);
     }
-  }
+  };
 
   const handleCredentialSubmit = async (userId: string) => {
-    if (!promptHabiticaUserId.trim() || !promptHabiticaApiToken.trim()) return
-    const updated = await updateUserCredentials(userId, promptHabiticaUserId.trim(), promptHabiticaApiToken.trim())
+    if (!promptHabiticaUserId.trim() || !promptHabiticaApiToken.trim()) return;
+    const updated = await updateUserCredentials(
+      userId,
+      promptHabiticaUserId.trim(),
+      promptHabiticaApiToken.trim(),
+    );
     if (updated) {
-      setCurrentUser(updated)
-      router.push('/upload')
+      setCurrentUser(updated);
+      router.push("/upload");
     }
-  }
+  };
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center gap-8 p-8">
-      <h1 className="text-2xl font-bold">Who are you?</h1>
+      <h1 className="font-display text-4xl text-bark">Who are you?</h1>
 
-      <div className="flex flex-col gap-3 w-full max-w-sm">
-        <input
-          type="text"
-          value={nameInput}
-          onChange={(e) => setNameInput(e.target.value)}
-          placeholder="Your name"
-          className="border border-gray-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
-        />
-        <input
-          type="text"
-          value={habiticaUserIdInput}
-          onChange={(e) => setHabiticaUserIdInput(e.target.value)}
-          placeholder="Habitica User ID"
-          className="border border-gray-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
-        />
-        <input
-          type="password"
-          value={habiticaApiTokenInput}
-          onChange={(e) => setHabiticaApiTokenInput(e.target.value)}
-          placeholder="Habitica API Token"
-          className="border border-gray-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
-        />
-        <button
+      <Card className="flex w-full max-w-sm flex-col gap-3">
+        <FieldLabel label="Your name">
+          <input
+            type="text"
+            value={nameInput}
+            onChange={(e) => setNameInput(e.target.value)}
+            placeholder="Your name"
+            className="w-full rounded-lg border-2 border-bark/30 bg-parchment px-3 py-2 text-sm text-bark shadow-sm transition-colors placeholder:text-bark/40 focus:outline-none focus:ring-2 focus:ring-moss"
+          />
+        </FieldLabel>
+        <FieldLabel label="Habitica user ID">
+          <input
+            type="text"
+            value={habiticaUserIdInput}
+            onChange={(e) => setHabiticaUserIdInput(e.target.value)}
+            placeholder="Habitica User ID"
+            className="w-full rounded-lg border-2 border-bark/30 bg-parchment px-3 py-2 text-sm text-bark shadow-sm transition-colors placeholder:text-bark/40 focus:outline-none focus:ring-2 focus:ring-moss"
+          />
+        </FieldLabel>
+        <FieldLabel label="Habitica API token">
+          <input
+            type="password"
+            value={habiticaApiTokenInput}
+            onChange={(e) => setHabiticaApiTokenInput(e.target.value)}
+            placeholder="Habitica API Token"
+            className="w-full rounded-lg border-2 border-bark/30 bg-parchment px-3 py-2 text-sm text-bark shadow-sm transition-colors placeholder:text-bark/40 focus:outline-none focus:ring-2 focus:ring-moss"
+          />
+        </FieldLabel>
+        <Button
           onClick={handleCreate}
-          disabled={isLoading || !nameInput.trim() || !habiticaUserIdInput.trim() || !habiticaApiTokenInput.trim()}
-          className="bg-black text-white rounded px-4 py-2 text-sm disabled:opacity-50"
+          disabled={
+            !nameInput.trim() ||
+            !habiticaUserIdInput.trim() ||
+            !habiticaApiTokenInput.trim()
+          }
+          isLoading={isLoading}
         >
-          {isLoading ? 'Creating...' : 'Create and login'}
-        </button>
-        {error && <p className="text-red-500 text-sm">{error}</p>}
-      </div>
+          Create and login
+        </Button>
+        {error && <p className="text-sm text-berry">{error}</p>}
+      </Card>
 
       {existingUsers.length > 0 && (
-        <div className="flex flex-col gap-2 w-full max-w-sm">
-          <p className="text-sm text-gray-500">Or continue as:</p>
+        <div className="flex w-full max-w-sm flex-col gap-2">
+          <p className="text-sm text-bark/60">Or continue as:</p>
           {existingUsers.map((user) => (
             <div key={user.id} className="flex flex-col gap-2">
               <button
                 onClick={() => handleSelectUser(user)}
-                className="border border-gray-200 rounded px-4 py-2 text-sm text-left hover:bg-gray-50"
+                className="rounded-lg border-2 border-bark/20 bg-parchment px-4 py-2 text-left text-sm text-bark shadow-sm transition-colors hover:border-bark/40 hover:bg-parchment-dark"
               >
                 {user.name}
               </button>
 
               {credentialPromptUserId === user.id && (
-                <div className="flex flex-col gap-2 pl-4 border-l border-gray-300">
-                  <p className="text-xs text-gray-500">Enter Habitica credentials for {user.name}:</p>
+                <Card className="flex flex-col gap-2 border-l-4 border-l-moss">
+                  <p className="text-xs text-bark/60">
+                    Enter Habitica credentials for {user.name}:
+                  </p>
                   <input
                     type="text"
                     value={promptHabiticaUserId}
                     onChange={(e) => setPromptHabiticaUserId(e.target.value)}
                     placeholder="Habitica User ID"
-                    className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+                    className="w-full rounded-lg border-2 border-bark/30 bg-parchment px-3 py-2 text-sm text-bark shadow-sm transition-colors placeholder:text-bark/40 focus:outline-none focus:ring-2 focus:ring-moss"
                   />
                   <input
                     type="password"
                     value={promptHabiticaApiToken}
                     onChange={(e) => setPromptHabiticaApiToken(e.target.value)}
                     placeholder="Habitica API Token"
-                    className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+                    className="w-full rounded-lg border-2 border-bark/30 bg-parchment px-3 py-2 text-sm text-bark shadow-sm transition-colors placeholder:text-bark/40 focus:outline-none focus:ring-2 focus:ring-moss"
                   />
-                  <button
+                  <Button
+                    variant="secondary"
                     onClick={() => handleCredentialSubmit(user.id)}
-                    disabled={updateLoading || !promptHabiticaUserId.trim() || !promptHabiticaApiToken.trim()}
-                    className="bg-black text-white rounded px-3 py-2 text-sm disabled:opacity-50"
+                    disabled={
+                      !promptHabiticaUserId.trim() ||
+                      !promptHabiticaApiToken.trim()
+                    }
+                    isLoading={updateLoading}
                   >
-                    {updateLoading ? 'Saving...' : 'Save and login'}
-                  </button>
-                  {updateError && <p className="text-red-500 text-sm">{updateError}</p>}
-                </div>
+                    Save and login
+                  </Button>
+                  {updateError && (
+                    <p className="text-xs text-berry">{updateError}</p>
+                  )}
+                </Card>
               )}
             </div>
           ))}
         </div>
       )}
     </main>
-  )
+  );
 }
