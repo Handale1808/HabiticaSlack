@@ -95,7 +95,7 @@ export default function UploadPage() {
 
       <div className="flex flex-col items-center gap-2 text-center">
         <h1 className="font-display text-4xl text-bark">upload your done list</h1>
-        <p className="text-sm text-bark/60">welcome back, {currentUser.name}</p>
+        <p className="text-sm text-bark/60">welcome back, <strong>{currentUser.name}</strong></p>
       </div>
 
       <AnimatePresence mode="wait">

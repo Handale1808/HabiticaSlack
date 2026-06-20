@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { useUser } from "@/context/UserContext";
 import { HabiticaClassIcon } from "@/components/HabiticaClassIcon";
 import { HabiticaStatBars } from "@/components/HabiticaStatBars";
+import { LinkButton } from "@/components/ui/LinkButton";
 
 const navItems = [
   { href: "/login", label: "login" },
@@ -32,16 +33,16 @@ export function Nav() {
 
           return (
             <li key={item.href}>
-              <Link
-                href={item.href}
-                className={`text-sm rounded-full px-3 py-1.5 transition-colors ${
-                  isActive
-                    ? "bg-moss font-semibold text-parchment"
-                    : "text-parchment/60 hover:bg-parchment/10 hover:text-parchment"
-                }`}
-              >
-                {item.label}
-              </Link>
+              {isActive ? (
+                <LinkButton href={item.href}>{item.label}</LinkButton>
+              ) : (
+                <Link
+                  href={item.href}
+                  className="text-sm rounded-full px-3 py-1.5 transition-colors text-parchment/60 hover:bg-parchment/10 hover:text-parchment"
+                >
+                  {item.label}
+                </Link>
+              )}
             </li>
           );
         })}
