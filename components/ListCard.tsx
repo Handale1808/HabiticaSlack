@@ -90,7 +90,7 @@ export function ListCard({
         </div>
 
         {list.slack_sent ? (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-moss px-3 py-1.5 text-sm font-semibold text-parchment">
+          <Button variant="shiny">
             <svg
               viewBox="0 0 24 24"
               fill="none"
@@ -104,7 +104,7 @@ export function ListCard({
               <path d="M5 13l4 4L19 7" />
             </svg>
             sent
-          </span>
+          </Button>
         ) : (
           <Button
             variant="secondary"

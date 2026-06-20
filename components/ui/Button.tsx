@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 
-type ButtonVariant = "primary" | "secondary" | "ghost";
+type ButtonVariant = "primary" | "secondary" | "ghost" | "shiny";
 
 interface ButtonProps {
   variant?: ButtonVariant;
@@ -19,6 +19,8 @@ const variantStyles: Record<ButtonVariant, string> = {
     "bg-parchment text-bark border-2 border-bark/30 shadow-sm hover:bg-parchment-dark hover:border-bark/50",
   ghost:
     "bg-transparent text-bark border-2 border-transparent hover:text-moss-dark hover:underline underline-offset-4",
+  shiny:
+    "text-parchment border-2 border-moss-dark/50 bg-[image:linear-gradient(to_bottom,rgba(255,255,255,0.25)_0%,rgba(255,255,255,0)_45%,rgba(0,0,0,0.05)_100%),linear-gradient(to_bottom,var(--color-moss),var(--color-moss-dark))] shadow-[inset_0_1px_0_rgba(255,255,255,0.35),inset_0_-2px_3px_rgba(0,0,0,0.15),0_1px_3px_rgba(0,0,0,0.2)] hover:brightness-105 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-2px_3px_rgba(0,0,0,0.18),0_2px_4px_rgba(0,0,0,0.25)] active:translate-y-px active:shadow-[inset_0_1px_3px_rgba(0,0,0,0.25)]",
 };
 
 export function Button({
