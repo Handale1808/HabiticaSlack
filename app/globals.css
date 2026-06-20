@@ -1,26 +1,53 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f3e9d6;
+  --foreground: #4a3526;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+  --color-bark: #3f2e22;
+  --color-bark-light: #674c37;
+  --color-parchment: #f5ead6;
+  --color-parchment-dark: #ada28a;
+  --color-moss: #5c7a52;
+  --color-moss-dark: #3f5638;
+  --color-berry: #a23e48;
+  --color-honey: #c99a3d;
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-caveat);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.rdp-root {
+  --rdp-accent-color: var(--color-moss);
+  --rdp-accent-background-color: var(--color-parchment-dark);
+  --rdp-today-color: var(--color-moss);
+  --rdp-day_button-border-radius: 0.5rem;
 }
+
+.rdp-chevron {
+  fill: var(--color-moss);
+}
+
 
 body {
-  background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-color: var(--background);
+  background-image: url('/background.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }

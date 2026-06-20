@@ -18,6 +18,8 @@ import { AddItemsButton } from "@/components/AddItemsButton";
 import { TrainingToggle } from "@/components/TrainingToggle";
 import { format, parseISO } from "date-fns";
 import { CompletedDateEditor } from "@/components/CompletedDateEditor";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 
 interface DoneItem {
   id: string;
@@ -100,12 +102,6 @@ export default function ListDetailPage({
     currentUser?.habitica_api_token ?? "",
   );
 
-  console.log(
-    "habitica creds",
-    currentUser?.habitica_user_id,
-    currentUser?.habitica_api_token,
-  );
-
   const { sendItem, sendingIds, sendErrors } = useHabiticaSend(
     currentUser?.habitica_user_id ?? "",
     currentUser?.habitica_api_token ?? "",
@@ -133,18 +129,18 @@ export default function ListDetailPage({
       <div className="w-full max-w-lg">
         <Link
           href="/lists"
-          className="text-sm text-gray-400 hover:text-white transition-colors"
+          className="text-sm text-bark/60 transition-colors hover:text-moss-dark"
         >
-          Back to lists
+          back to lists
         </Link>
       </div>
 
-      <h1 className="text-2xl font-bold">Done items</h1>
+      <h1 className="font-display text-3xl text-bark">done items</h1>
 
       {!isLoading && (
         <div className="w-full max-w-lg flex items-center gap-2">
           {completedAt && (
-            <span className="text-sm text-gray-400">
+            <span className="text-sm text-bark/70">
               {format(completedAt, "d MMMM yyyy")}
             </span>
           )}
@@ -157,7 +153,7 @@ export default function ListDetailPage({
       )}
 
       {!isLoading && currentUser && (
-        <div className="w-full max-w-lg flex flex-col gap-2">
+        <Card className="flex w-full max-w-lg flex-col gap-3">
           <AppendUploadButton
             listId={id}
             userId={currentUser.id}
@@ -174,43 +170,47 @@ export default function ListDetailPage({
             value={useForTraining}
             onChange={setUseForTraining}
           />
-        </div>
+        </Card>
       )}
 
-      {isLoading && <p className="text-sm text-gray-500">Loading...</p>}
-      {error && <p className="text-red-500 text-sm">{error}</p>}
+      {isLoading && (
+        <p className="text-sm text-bark/60">gathering this list...</p>
+      )}
+      {error && <p className="text-sm text-berry">{error}</p>}
 
       {!isLoading && !error && items.length === 0 && (
-        <p className="text-sm text-gray-500">No items found for this list.</p>
+        <p className="text-sm text-bark/60">no items found for this list.</p>
       )}
 
       {!isLoading && items.length > 0 && (
-        <div className="flex flex-col gap-3 w-full max-w-lg">
-          {items.map((item) => (
-            <DoneItemRow
-              key={item.id}
-              id={item.id}
-              text={item.text}
-              tagId={item.habitica_tag}
-              tags={tags}
-              habiticaSend={item.habitica_send}
-              isSending={sendingIds.has(item.id)}
-              sendError={sendErrors[item.id] ?? null}
-              onChange={handleTextChange}
-              onBlur={handleBlur}
-              onTagChange={handleTagChange}
-              onSend={(id) => {
-                const item = items.find((i) => i.id === id);
-                if (item) sendItem(item);
-              }}
-            />
-          ))}
-          {updateStatus === "saving" && (
-            <p className="text-gray-500 text-sm">Saving...</p>
-          )}
-          {updateStatus === "error" && (
-            <p className="text-red-500 text-sm">{updateError}</p>
-          )}
+        <div className="flex w-full max-w-lg flex-col gap-3">
+          <Card className="flex flex-col gap-3">
+            {items.map((item) => (
+              <DoneItemRow
+                key={item.id}
+                id={item.id}
+                text={item.text}
+                tagId={item.habitica_tag}
+                tags={tags}
+                habiticaSend={item.habitica_send}
+                isSending={sendingIds.has(item.id)}
+                sendError={sendErrors[item.id] ?? null}
+                onChange={handleTextChange}
+                onBlur={handleBlur}
+                onTagChange={handleTagChange}
+                onSend={(id) => {
+                  const item = items.find((i) => i.id === id);
+                  if (item) sendItem(item);
+                }}
+              />
+            ))}
+            {updateStatus === "saving" && (
+              <p className="text-sm text-bark/60">tucking that change in...</p>
+            )}
+            {updateStatus === "error" && (
+              <p className="text-sm text-berry">{updateError}</p>
+            )}
+          </Card>
 
           <SendAllButton items={items} sendItem={sendItem} />
           <SlackSendBlock

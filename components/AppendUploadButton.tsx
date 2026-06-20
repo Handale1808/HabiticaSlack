@@ -3,6 +3,7 @@
 import { useAppendUpload } from "@/hooks/useAppendUpload";
 import { UploadForm } from "@/components/UploadForm";
 import { useState } from "react";
+import { Button } from "@/components/ui/Button";
 
 interface Tag {
   id: string;
@@ -53,15 +54,16 @@ export function AppendUploadButton({
     }
   };
 
-  return (
+ return (
     <div className="flex flex-col gap-2">
-      <button
+      <Button
+        variant="ghost"
         onClick={() => setIsExpanded((prev) => !prev)}
         disabled={disabled}
-        className="text-sm text-gray-400 hover:text-white transition-colors disabled:opacity-50 self-start"
+        className="self-start"
       >
-        {isExpanded ? "Cancel" : "Add from photo"}
-      </button>
+        {isExpanded ? "cancel" : "add from photo"}
+      </Button>
 
       {isExpanded && (
         <UploadForm

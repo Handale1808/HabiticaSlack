@@ -7,11 +7,12 @@ import { usePathname } from "next/navigation";
 import { useUser } from "@/context/UserContext";
 import { HabiticaClassIcon } from "@/components/HabiticaClassIcon";
 import { HabiticaStatBars } from "@/components/HabiticaStatBars";
+import { LinkButton } from "@/components/ui/LinkButton";
 
 const navItems = [
-  { href: "/login", label: "Login" },
-  { href: "/upload", label: "Upload" },
-  { href: "/lists", label: "Lists" },
+  { href: "/login", label: "login" },
+  { href: "/upload", label: "upload" },
+  { href: "/lists", label: "lists" },
 ];
 
 export function Nav() {
@@ -22,7 +23,7 @@ export function Nav() {
     !!currentUser?.habitica_user_id && !!currentUser?.habitica_api_token;
 
   return (
-    <nav className="w-full border-b border-gray-800 px-8 py-4 flex justify-between items-center">
+    <nav className="w-full bg-bark/50 bg-[url('/textures/wood.png')] bg-cover bg-center bg-blend-multiply border-b border-bark-light/40 px-8 py-4 flex justify-between items-center shadow-sm">
       <ul className="flex gap-6">
         {navItems.map((item) => {
           const isActive =
@@ -32,22 +33,22 @@ export function Nav() {
 
           return (
             <li key={item.href}>
-              <Link
-                href={item.href}
-                className={`text-sm transition-colors ${
-                  isActive
-                    ? "text-white font-semibold underline underline-offset-4"
-                    : "text-gray-400 hover:text-white"
-                }`}
-              >
-                {item.label}
-              </Link>
+              {isActive ? (
+                <LinkButton href={item.href}>{item.label}</LinkButton>
+              ) : (
+                <Link
+                  href={item.href}
+                  className="text-sm rounded-full px-3 py-1.5 transition-colors text-parchment/60 hover:bg-parchment/10 hover:text-parchment"
+                >
+                  {item.label}
+                </Link>
+              )}
             </li>
           );
         })}
       </ul>
       {hasHabiticaCredentials && habiticaStats && (
-        <div className="flex items-center gap-2 text-gray-300">
+        <div className="flex items-center gap-2 text-parchment">
           <HabiticaClassIcon
             characterClass={habiticaStats.class}
             className="w-5 h-5"

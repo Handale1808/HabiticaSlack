@@ -4,14 +4,13 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { useSlackSend } from "@/hooks/useSlackSend";
-import { SlackPreview } from "@/components/SlackPreview";
 import { useUser } from "@/context/UserContext";
 import { useHabiticaTags } from "@/hooks/useHabiticaTags";
 import { ManualCreateForm } from "@/components/ManualCreateForm";
-import { TrainingToggle } from "@/components/TrainingToggle";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import { PhotoCreateForm } from "@/components/PhotoCreateForm";
-import { CompletedDateEditor } from "@/components/CompletedDateEditor";
+import { ListCard } from "@/components/ListCard";
+import { Button } from "@/components/ui/Button";
 
 interface ListRow {
   id: string;
@@ -141,28 +140,28 @@ export default function ListsPage() {
   };
 
   return (
-    <main className="min-h-screen flex flex-col items-center gap-8 p-8">
-      <div className="w-full max-w-sm flex items-center justify-between gap-2">
-        <h1 className="text-2xl font-bold">Your lists</h1>
-        <div className="flex gap-3">
-          <button
+    <main className="flex min-h-screen flex-col items-center gap-8 p-8">
+      <div className="flex w-full max-w-sm items-center justify-between gap-2">
+        <h1 className="font-display text-3xl text-bark">your lists</h1>
+        <div className="flex gap-2">
+          <Button
+            variant="ghost"
             onClick={() => {
               setIsUploadingPhoto(false);
               setIsCreating((prev) => !prev);
             }}
-            className="text-sm text-gray-400 hover:text-white transition-colors"
           >
-            {isCreating ? "Cancel" : "New manual list"}
-          </button>
-          <button
+            {isCreating ? "cancel" : "new manual list"}
+          </Button>
+          <Button
+            variant="ghost"
             onClick={() => {
               setIsCreating(false);
               setIsUploadingPhoto((prev) => !prev);
             }}
-            className="text-sm text-gray-400 hover:text-white transition-colors"
           >
-            {isUploadingPhoto ? "Cancel" : "New list from photo"}
-          </button>
+            {isUploadingPhoto ? "cancel" : "new list from photo"}
+          </Button>
         </div>
       </div>
 
@@ -193,104 +192,43 @@ export default function ListsPage() {
         </div>
       )}
 
-      {isLoading && <p className="text-sm text-gray-500">Loading...</p>}
-      {error && <p className="text-red-500 text-sm">{error}</p>}
+      {isLoading && (
+        <p className="text-sm text-bark/60">gathering your lists...</p>
+      )}
+      {error && <p className="text-sm text-berry">{error}</p>}
 
       {!isLoading && !error && lists.length === 0 && (
-        <p className="text-sm text-gray-500">
-          No lists yet. Upload a done list to get started.
+        <p className="text-sm text-bark/60">
+          no lists yet — upload a done list to get started.
         </p>
       )}
 
       {!isLoading && lists.length > 0 && (
-        <div className="flex flex-col gap-3 w-full max-w-sm">
+        <div className="flex w-full max-w-sm flex-col gap-3">
           {lists.map((list) => (
-            <div key={list.id} className="flex flex-col gap-2">
-              <div className="flex gap-2">
-                <button
-                  onClick={() => router.push(`/lists/${list.id}`)}
-                  className="flex-1 border border-gray-700 rounded px-4 py-3 text-sm text-left hover:bg-gray-900 transition-colors flex flex-col gap-0.5"
-                >
-                  {list.completed_at && (
-                    <span>
-                      {format(parseISO(list.completed_at), "d MMMM yyyy")}
-                    </span>
-                  )}
-                  <span className="text-xs text-gray-500">
-                    {new Date(list.created_at).toLocaleString("en-ZA", {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </span>
-                </button>
-                <CompletedDateEditor
-                  listId={list.id}
-                  value={list.completed_at ? parseISO(list.completed_at) : null}
-                  onChange={(date) => handleCompletedAtChange(list.id, date)}
-                />
-                {list.slack_sent ? (
-                  <span className="border border-gray-700 rounded px-4 py-3 text-sm text-gray-500">
-                    Sent
-                  </span>
-                ) : (
-                  <button
-                    onClick={() => handleSlackClick(list.id)}
-                    disabled={
-                      slackItemsLoading ||
-                      (activeSlackListId === list.id &&
-                        (enrichmentStatus === "loading" ||
-                          enrichmentStatus === "sending" ||
-                          enrichmentStatus === "success"))
-                    }
-                    className="border border-gray-700 rounded px-4 py-3 text-sm disabled:opacity-50 hover:bg-gray-900 transition-colors"
-                  >
-                    {activeSlackListId === list.id &&
-                    enrichmentStatus === "loading"
-                      ? "Preparing..."
-                      : "Send to Slack"}
-                  </button>
-                )}
-                <TrainingToggle
-                  listId={list.id}
-                  value={list.use_for_training}
-                  onChange={(newValue) =>
-                    handleTrainingChange(list.id, newValue)
-                  }
-                />
-              </div>
-
-              {activeSlackListId === list.id && slackItemsError && (
-                <p className="text-red-500 text-xs">{slackItemsError}</p>
-              )}
-
-              {activeSlackListId === list.id &&
-                (enrichmentStatus === "preview" ||
-                  enrichmentStatus === "sending" ||
-                  enrichmentStatus === "error") &&
-                enrichedItems.length > 0 &&
-                summary && (
-                  <SlackPreview
-                    enrichedItems={enrichedItems}
-                    summary={summary}
-                    availableCategories={availableCategories}
-                    onCategoryChange={handleCategoryChange}
-                    onConfirm={confirmSend}
-                    onCancel={cancelPreview}
-                    isSending={enrichmentStatus === "sending"}
-                    sendError={enrichmentError}
-                  />
-                )}
-
-              {activeSlackListId === list.id &&
-                enrichmentStatus === "success" && (
-                  <p className="text-gray-500 text-sm">
-                    Successfully sent to Slack.
-                  </p>
-                )}
-            </div>
+            <ListCard
+              key={list.id}
+              list={list}
+              isActive={activeSlackListId === list.id}
+              slackItemsLoading={slackItemsLoading}
+              slackItemsError={slackItemsError}
+              enrichmentStatus={enrichmentStatus}
+              enrichedItems={enrichedItems}
+              summary={summary}
+              availableCategories={availableCategories}
+              enrichmentError={enrichmentError}
+              onOpen={() => router.push(`/lists/${list.id}`)}
+              onSlackClick={() => handleSlackClick(list.id)}
+              onCategoryChange={handleCategoryChange}
+              onConfirm={confirmSend}
+              onCancel={cancelPreview}
+              onCompletedAtChange={(date) =>
+                handleCompletedAtChange(list.id, date)
+              }
+              onTrainingChange={(newValue) =>
+                handleTrainingChange(list.id, newValue)
+              }
+            />
           ))}
         </div>
       )}

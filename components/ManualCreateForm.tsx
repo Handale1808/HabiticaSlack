@@ -5,6 +5,10 @@ import { useRouter } from "next/navigation";
 import { useManualCreate } from "@/hooks/useManualCreate";
 import { HabiticaTagSelector } from "@/components/HabiticaTagSelector";
 import { DateField } from "@/components/DateField";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { FieldLabel } from "@/components/ui/FieldLabel";
+import { Dropdown } from "@/components/ui/Dropdown";
 
 interface Tag {
   id: string;
@@ -60,93 +64,96 @@ export function ManualCreateForm({
     resetToInput();
   };
 
+  const draftTagOptions = [
+    { id: "", label: "No tag" },
+    ...tags.map((tag) => ({ id: tag.id, label: tag.name })),
+  ];
+
   return (
     <div className="flex flex-col gap-4 border border-gray-700 rounded p-4">
       {step === "input" && (
-        <>
-          <HabiticaTagSelector
-            tags={tags}
-            selectedTagId={defaultTagId}
-            onChange={setDefaultTagId}
-            createTag={createTag}
-            isLoading={tagsLoading}
-            createLoading={createLoading}
-            error={tagsError}
-          />
+        <Card className="flex flex-col gap-4">
+          <FieldLabel label="Tag this list">
+            <HabiticaTagSelector
+              tags={tags}
+              selectedTagId={defaultTagId}
+              onChange={setDefaultTagId}
+              createTag={createTag}
+              isLoading={tagsLoading}
+              createLoading={createLoading}
+              error={tagsError}
+            />
+          </FieldLabel>
           <DateField
             variant="inline"
             value={completedAt}
             onChange={setCompletedAt}
-            label="Done on"
+            label="done on"
           />
-          <textarea
-            value={rawText}
-            onChange={(e) => setRawText(e.target.value)}
-            placeholder="One item per line"
-            rows={6}
-            className="border border-gray-700 rounded px-3 py-2 text-sm bg-transparent focus:outline-none focus:ring-1 focus:ring-gray-500 resize-none"
-          />
+          <FieldLabel label="Items">
+            <textarea
+              value={rawText}
+              onChange={(e) => setRawText(e.target.value)}
+              placeholder="one item per line"
+              rows={6}
+              className="w-full resize-none rounded-lg border-2 border-bark/30 bg-parchment px-3 py-2 text-sm text-bark shadow-sm transition-colors placeholder:text-bark/40 focus:outline-none focus:ring-2 focus:ring-moss"
+            />
+          </FieldLabel>
           <div className="flex gap-2">
-            <button
+            <Button
               onClick={() => saveList(completedAt)}
               disabled={status === "saving"}
-              className="border border-gray-700 rounded px-4 py-2 text-sm disabled:opacity-50 hover:bg-gray-900 transition-colors"
             >
-              Review
-            </button>
-            <button
-              onClick={onCancel}
-              className="border border-gray-700 rounded px-4 py-2 text-sm hover:bg-gray-900 transition-colors"
-            >
-              Cancel
-            </button>
+              review
+            </Button>
+            <Button variant="ghost" onClick={onCancel}>
+              cancel
+            </Button>
           </div>
-        </>
+        </Card>
       )}
 
       {step === "review" && (
-        <>
-          <div className="flex flex-col gap-2">
-            {drafts.map((draft) => (
-              <div key={draft.draftId} className="flex gap-2 items-center">
-                <p className="flex-1 text-sm">{draft.text}</p>
-                <select
-                  value={draft.tagId ?? ""}
-                  onChange={(e) =>
-                    handleDraftTagChange(draft.draftId, e.target.value || null)
-                  }
-                  className="border border-gray-700 rounded px-3 py-2 text-sm bg-transparent focus:outline-none focus:ring-1 focus:ring-gray-500"
-                >
-                  <option value="">No tag</option>
-                  {tags.map((tag) => (
-                    <option key={tag.id} value={tag.id}>
-                      {tag.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            ))}
-          </div>
+        <Card className="flex flex-col gap-4">
+          {drafts.length === 0 ? (
+            <p className="text-sm text-bark/60">
+              No items to review — head back and add a few lines.
+            </p>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {drafts.map((draft) => (
+                <div key={draft.draftId} className="flex items-center gap-2">
+                  <p className="flex-1 text-sm text-bark">{draft.text}</p>
+                  <div className="w-36">
+                    <Dropdown
+                      options={draftTagOptions}
+                      value={draft.tagId ?? ""}
+                      onChange={(tagId) =>
+                        handleDraftTagChange(draft.draftId, tagId || null)
+                      }
+                      placeholder="No tag"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {error && <p className="text-sm text-berry">{error}</p>}
 
           <div className="flex gap-2">
-            <button
-              onClick={saveList}
-              disabled={status === "saving"}
-              className="border border-gray-700 rounded px-4 py-2 text-sm disabled:opacity-50 hover:bg-gray-900 transition-colors"
-            >
-              {status === "saving" ? "Saving..." : "Save list"}
-            </button>
-            <button
+            <Button onClick={() => saveList(completedAt)} isLoading={status === "saving"}>
+              Save list
+            </Button>
+            <Button
+              variant="ghost"
               onClick={handleBack}
               disabled={status === "saving"}
-              className="border border-gray-700 rounded px-4 py-2 text-sm disabled:opacity-50 hover:bg-gray-900 transition-colors"
             >
               Back
-            </button>
+            </Button>
           </div>
-        </>
+        </Card>
       )}
     </div>
   );

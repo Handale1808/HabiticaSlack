@@ -23,7 +23,11 @@ export function HabiticaClassIcon({
           strokeLinejoin="round"
           className={className}
         >
-          <path d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6l-8-4Z" />
+          <ellipse cx="12" cy="15" rx="5" ry="4" />
+          <circle cx="6" cy="8" r="2" />
+          <circle cx="10.5" cy="5.5" r="2" />
+          <circle cx="15.5" cy="5.5" r="2" />
+          <circle cx="19" cy="9" r="2" />
         </svg>
       )
     case 'rogue':
@@ -37,9 +41,9 @@ export function HabiticaClassIcon({
           strokeLinejoin="round"
           className={className}
         >
-          <path d="M4 20 16 8" />
-          <path d="M14 4l6 6-3 1-4-4 1-3Z" />
-          <path d="M4 20l2-5 3 3-5 2Z" />
+          <path d="M12 3c-4 2-7 7-7 12 0 2 1.5 3.5 3.5 3.5 5 0 10-3 11-7.5 1-4.5-2.5-8-7.5-8Z" />
+          <path d="M12 3v15" />
+          <path d="M9 8l3 1M8 12l4 1M8 16l4 1" />
         </svg>
       )
     case 'healer':
@@ -53,7 +57,9 @@ export function HabiticaClassIcon({
           strokeLinejoin="round"
           className={className}
         >
-          <path d="M12 4v16M4 12h16" />
+          <path d="M12 21c-4-2-7-6-7-11 0-3 2-6 7-7 5 1 7 4 7 7 0 5-3 9-7 11Z" />
+          <path d="M12 21V7" />
+          <path d="M12 11l-3-2M12 15l3-2" />
         </svg>
       )
     case 'wizard':
@@ -67,8 +73,8 @@ export function HabiticaClassIcon({
           strokeLinejoin="round"
           className={className}
         >
-          <path d="M12 2v4M12 18v4M2 12h4M18 12h4M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3" />
-          <circle cx="12" cy="12" r="2" />
+          <path d="M8 9c0-3 1.5-5 4-5s4 2 4 5" />
+          <path d="M7 9h10l-1 2c1 1 1.5 2.5 1.5 4 0 3.5-2.5 6-5.5 6s-5.5-2.5-5.5-6c0-1.5.5-3 1.5-4Z" />
         </svg>
       )
     default:

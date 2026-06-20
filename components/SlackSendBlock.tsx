@@ -2,6 +2,7 @@
 
 import { EnrichedItem } from "@/hooks/useSlackSend";
 import { SlackPreview } from "@/components/SlackPreview";
+import { Button } from "@/components/ui/Button";
 
 interface SlackSendBlockProps {
   enrichmentStatus: "idle" | "loading" | "preview" | "sending" | "success" | "error";
@@ -30,21 +31,18 @@ export function SlackSendBlock({
 }: SlackSendBlockProps) {
   return (
     <>
-      <button
+      <Button
+        variant="secondary"
         onClick={onTrigger}
-        disabled={
-          disabled ||
-          enrichmentStatus === "loading" ||
-          enrichmentStatus === "success"
-        }
-        className="border border-gray-700 rounded px-4 py-2 text-sm disabled:opacity-50 hover:bg-gray-900 transition-colors"
+        disabled={disabled || enrichmentStatus === "success"}
+        isLoading={enrichmentStatus === "loading"}
       >
-        {enrichmentStatus === "loading"
-          ? "Preparing..."
-          : enrichmentStatus === "success"
-            ? "Sent to Slack"
-            : "Send to Slack"}
-      </button>
+        {enrichmentStatus === "success"
+          ? "sent to Slack"
+          : enrichmentStatus === "loading"
+            ? "gathering your list..."
+            : "send to Slack"}
+      </Button>
 
       {(enrichmentStatus === "preview" ||
         enrichmentStatus === "sending" ||
@@ -64,7 +62,21 @@ export function SlackSendBlock({
         )}
 
       {enrichmentStatus === "success" && (
-        <p className="text-gray-500 text-sm">Successfully sent to Slack.</p>
+        <p className="flex items-center gap-1.5 text-sm text-moss-dark">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-4 w-4"
+            aria-hidden="true"
+          >
+            <path d="M5 13l4 4L19 7" />
+          </svg>
+          off it goes — sent to Slack.
+        </p>
       )}
     </>
   );
