@@ -70,7 +70,7 @@ export function PhotoCreateForm({
         onDateChange={setSelectedDate}
       />
       <Button variant="ghost" onClick={onCancel} className="self-start">
-        Cancel
+        cancel
       </Button>
     </Card>
   );

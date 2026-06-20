@@ -61,10 +61,10 @@ export function ListCard({
         <span className="font-display text-2xl text-bark">
           {list.completed_at
             ? format(parseISO(list.completed_at), "d MMMM yyyy")
-            : "No completion date set"}
+            : "no completion date set"}
         </span>
         <span className="text-xs text-bark/50">
-          Created{" "}
+          created{" "}
           {new Date(list.created_at).toLocaleString("en-ZA", {
             day: "numeric",
             month: "long",
@@ -103,7 +103,7 @@ export function ListCard({
             >
               <path d="M5 13l4 4L19 7" />
             </svg>
-            Sent
+            sent
           </span>
         ) : (
           <Button
@@ -118,7 +118,7 @@ export function ListCard({
             }
             isLoading={isActive && enrichmentStatus === "loading"}
           >
-            {isActive && enrichmentStatus === "loading" ? "Preparing..." : "Send to Slack"}
+            {isActive && enrichmentStatus === "loading" ? "preparing..." : "send to slack"}
           </Button>
         )}
       </div>
@@ -159,7 +159,7 @@ export function ListCard({
           >
             <path d="M5 13l4 4L19 7" />
           </svg>
-          Off it goes — sent to Slack.
+          off it goes — sent to slack.
         </p>
       )}
     </Card>

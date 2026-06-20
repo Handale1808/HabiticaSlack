@@ -9,9 +9,9 @@ import { HabiticaClassIcon } from "@/components/HabiticaClassIcon";
 import { HabiticaStatBars } from "@/components/HabiticaStatBars";
 
 const navItems = [
-  { href: "/login", label: "Login" },
-  { href: "/upload", label: "Upload" },
-  { href: "/lists", label: "Lists" },
+  { href: "/login", label: "login" },
+  { href: "/upload", label: "upload" },
+  { href: "/lists", label: "lists" },
 ];
 
 export function Nav() {

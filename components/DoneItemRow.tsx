@@ -73,7 +73,7 @@ export function DoneItemRow({ id, text, tagId, tags, habiticaSend, isSending, se
         )}
       </div>
       {sendError && (
-        <p className="text-xs text-berry">{sendError}</p>
+        <p className="text-xs text-berry">{sendError?.toLowerCase()}</p>
       )}
     </div>
   );

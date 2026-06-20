@@ -46,7 +46,7 @@ export function HabiticaTagSelector({
         options={tagOptions}
         value={selectedTagId}
         onChange={onChange}
-        placeholder={isLoading ? "Gathering tags..." : "Select a tag"}
+        placeholder={isLoading ? "gathering tags..." : "select a tag"}
         disabled={isLoading}
       />
 
@@ -56,7 +56,7 @@ export function HabiticaTagSelector({
             type="text"
             value={newTagName}
             onChange={(e) => setNewTagName(e.target.value)}
-            placeholder="New tag name"
+            placeholder="new tag name"
             className="flex-1 rounded-lg border-2 border-bark/30 bg-parchment px-3 py-2 text-sm text-bark shadow-sm transition-colors placeholder:text-bark/40 focus:outline-none focus:ring-2 focus:ring-moss"
           />
           <Button
@@ -65,7 +65,7 @@ export function HabiticaTagSelector({
             disabled={!newTagName.trim()}
             isLoading={createLoading}
           >
-            Add tag
+            add tag
           </Button>
         </div>
       </FieldLabel>

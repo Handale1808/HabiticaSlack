@@ -62,7 +62,7 @@ export function AppendUploadButton({
         disabled={disabled}
         className="self-start"
       >
-        {isExpanded ? "Cancel" : "Add from photo"}
+        {isExpanded ? "cancel" : "add from photo"}
       </Button>
 
       {isExpanded && (

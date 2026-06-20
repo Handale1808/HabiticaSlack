@@ -74,14 +74,14 @@ export function UploadForm({
           variant="inline"
           value={selectedDate}
           onChange={(date) => onDateChange?.(date)}
-          label="Done on"
+          label="done on"
         />
       )}
 
-      <FieldLabel label="Your done list">
+      <FieldLabel label="your done list">
         <label className="flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-bark/30 bg-parchment-dark/30 px-4 py-6 text-center text-sm text-bark/70 transition-colors hover:border-bark/50 hover:bg-parchment-dark/50">
           <span>
-            {selectedFile ? selectedFile.name : "Choose a screenshot to upload"}
+            {selectedFile ? selectedFile.name : "choose a screenshot to upload"}
           </span>
           <span className="text-xs text-bark/50">PNG or JPG</span>
           <input
@@ -99,7 +99,7 @@ export function UploadForm({
         disabled={!selectedFile}
         isLoading={isLoading}
       >
-        {isLoading ? "Sending it into the forest..." : "Upload your done list"}
+        {isLoading ? "sending it into the forest..." : "upload your done list"}
       </Button>
 
       {error && <p className="text-sm text-berry">{error}</p>}

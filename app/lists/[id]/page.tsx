@@ -174,12 +174,12 @@ export default function ListDetailPage({
       )}
 
       {isLoading && (
-        <p className="text-sm text-bark/60">Gathering this list...</p>
+        <p className="text-sm text-bark/60">gathering this list...</p>
       )}
       {error && <p className="text-sm text-berry">{error}</p>}
 
       {!isLoading && !error && items.length === 0 && (
-        <p className="text-sm text-bark/60">No items found for this list.</p>
+        <p className="text-sm text-bark/60">no items found for this list.</p>
       )}
 
       {!isLoading && items.length > 0 && (
@@ -205,7 +205,7 @@ export default function ListDetailPage({
               />
             ))}
             {updateStatus === "saving" && (
-              <p className="text-sm text-bark/60">Tucking that change in...</p>
+              <p className="text-sm text-bark/60">tucking that change in...</p>
             )}
             {updateStatus === "error" && (
               <p className="text-sm text-berry">{updateError}</p>

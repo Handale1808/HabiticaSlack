@@ -88,13 +88,13 @@ export function ManualCreateForm({
             variant="inline"
             value={completedAt}
             onChange={setCompletedAt}
-            label="Done on"
+            label="done on"
           />
           <FieldLabel label="Items">
             <textarea
               value={rawText}
               onChange={(e) => setRawText(e.target.value)}
-              placeholder="One item per line"
+              placeholder="one item per line"
               rows={6}
               className="w-full resize-none rounded-lg border-2 border-bark/30 bg-parchment px-3 py-2 text-sm text-bark shadow-sm transition-colors placeholder:text-bark/40 focus:outline-none focus:ring-2 focus:ring-moss"
             />
@@ -104,10 +104,10 @@ export function ManualCreateForm({
               onClick={() => saveList(completedAt)}
               disabled={status === "saving"}
             >
-              Review
+              review
             </Button>
             <Button variant="ghost" onClick={onCancel}>
-              Cancel
+              cancel
             </Button>
           </div>
         </Card>

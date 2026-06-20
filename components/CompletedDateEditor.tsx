@@ -50,7 +50,7 @@ export function CompletedDateEditor({
         onChange={handleSelect}
         disabled={isSaving}
       />
-      {error && <p className="text-red-500 text-xs">{error}</p>}
+      {error && <p className="text-red-500 text-xs">{error?.toLowerCase()}</p>}
     </div>
   );
 }

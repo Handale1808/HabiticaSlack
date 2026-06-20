@@ -119,14 +119,14 @@ export default function LoginPage() {
           }
           isLoading={isLoading}
         >
-          Create and login
+          create and login
         </Button>
-        {error && <p className="text-sm text-berry">{error}</p>}
+        {error && <p className="text-sm text-berry">{error.toLowerCase()}</p>}
       </Card>
 
       {existingUsers.length > 0 && (
         <div className="flex w-full max-w-sm flex-col gap-2">
-          <p className="text-sm text-bark/60">Or continue as:</p>
+          <p className="text-sm text-bark/60">or continue as:</p>
           {existingUsers.map((user) => (
             <div key={user.id} className="flex flex-col gap-2">
               <button
@@ -139,20 +139,20 @@ export default function LoginPage() {
               {credentialPromptUserId === user.id && (
                 <Card className="flex flex-col gap-2 border-l-4 border-l-moss">
                   <p className="text-xs text-bark/60">
-                    Enter Habitica credentials for {user.name}:
+                    enter habitica credentials for {user.name}:
                   </p>
                   <input
                     type="text"
                     value={promptHabiticaUserId}
                     onChange={(e) => setPromptHabiticaUserId(e.target.value)}
-                    placeholder="Habitica User ID"
+                    placeholder="habitica user id"
                     className="w-full rounded-lg border-2 border-bark/30 bg-parchment px-3 py-2 text-sm text-bark shadow-sm transition-colors placeholder:text-bark/40 focus:outline-none focus:ring-2 focus:ring-moss"
                   />
                   <input
                     type="password"
                     value={promptHabiticaApiToken}
                     onChange={(e) => setPromptHabiticaApiToken(e.target.value)}
-                    placeholder="Habitica API Token"
+                    placeholder="habitica api token"
                     className="w-full rounded-lg border-2 border-bark/30 bg-parchment px-3 py-2 text-sm text-bark shadow-sm transition-colors placeholder:text-bark/40 focus:outline-none focus:ring-2 focus:ring-moss"
                   />
                   <Button
@@ -164,10 +164,10 @@ export default function LoginPage() {
                     }
                     isLoading={updateLoading}
                   >
-                    Save and login
+                    save and login
                   </Button>
                   {updateError && (
-                    <p className="text-xs text-berry">{updateError}</p>
+                    <p className="text-xs text-berry">{updateError.toLowerCase()}</p>
                   )}
                 </Card>
               )}

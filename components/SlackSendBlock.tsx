@@ -38,10 +38,10 @@ export function SlackSendBlock({
         isLoading={enrichmentStatus === "loading"}
       >
         {enrichmentStatus === "success"
-          ? "Sent to Slack"
+          ? "sent to Slack"
           : enrichmentStatus === "loading"
-            ? "Gathering your list..."
-            : "Send to Slack"}
+            ? "gathering your list..."
+            : "send to Slack"}
       </Button>
 
       {(enrichmentStatus === "preview" ||
@@ -75,7 +75,7 @@ export function SlackSendBlock({
           >
             <path d="M5 13l4 4L19 7" />
           </svg>
-          Off it goes — sent to Slack.
+          off it goes — sent to Slack.
         </p>
       )}
     </>

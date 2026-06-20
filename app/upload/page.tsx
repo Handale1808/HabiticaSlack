@@ -89,13 +89,13 @@ export default function UploadPage() {
 
       <div className="flex w-full max-w-sm justify-end">
         <Button variant="ghost" onClick={() => router.push("/lists")}>
-          New list
+          new list
         </Button>
       </div>
 
       <div className="flex flex-col items-center gap-2 text-center">
-        <h1 className="font-display text-4xl text-bark">Upload your done list</h1>
-        <p className="text-sm text-bark/60">Welcome back, {currentUser.name}</p>
+        <h1 className="font-display text-4xl text-bark">upload your done list</h1>
+        <p className="text-sm text-bark/60">welcome back, {currentUser.name}</p>
       </div>
 
       <AnimatePresence mode="wait">
@@ -163,18 +163,18 @@ export default function UploadPage() {
                     exit={{ opacity: 0 }}
                     className="text-sm text-bark/60"
                   >
-                    Tucking that change in...
+                    tucking that change in...
                   </motion.p>
                 )}
               </AnimatePresence>
 
               {updateStatus === "error" && (
-                <p className="text-sm text-berry">{updateError}</p>
+                <p className="text-sm text-berry">{updateError?.toLowerCase()}</p>
               )}
             </Card>
 
             <Button variant="secondary" onClick={handleReset}>
-              Upload another list
+              upload another list
             </Button>
 
             <SendAllButton items={items} sendItem={sendItem} />

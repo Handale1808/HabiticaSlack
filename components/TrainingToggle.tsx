@@ -46,9 +46,11 @@ export function TrainingToggle({
         checked={optimisticValue}
         onChange={handleToggle}
         disabled={isUpdating}
-        label="Use for training"
+        label="use for training"
       />
-      {updateError && <p className="text-xs text-berry">{updateError}</p>}
+      {updateError && (
+        <p className="text-xs text-berry">{updateError?.toLowerCase()}</p>
+      )}
     </div>
   );
 }

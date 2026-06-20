@@ -52,7 +52,7 @@ export function DateField({
   return (
     <div className="relative flex flex-col gap-1" ref={containerRef}>
       {variant === "inline" && label && (
-        <span className="text-xs font-semibold uppercase tracking-wide text-bark/70">{label}</span>
+        <span className="text-xs font-semibold uppercase tracking-wide text-bark/70">{label.toLowerCase()}</span>
       )}
 
       {variant === "inline" ? (
@@ -62,14 +62,14 @@ export function DateField({
           disabled={disabled}
           className="rounded-lg border-2 border-bark/30 bg-parchment px-3 py-2 text-left text-sm text-bark shadow-sm transition-colors hover:border-bark/50 focus:outline-none focus:ring-2 focus:ring-moss disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {formattedValue ?? "Select a date"}
+          {formattedValue ?? "select a date"}
         </button>
       ) : (
         <button
           type="button"
           onClick={() => setIsOpen((prev) => !prev)}
           disabled={disabled}
-          aria-label="Edit completed date"
+          aria-label="edit completed date"
           className="rounded-lg border-2 border-bark/30 bg-parchment p-2 text-bark transition-colors hover:border-bark/50 hover:bg-parchment-dark disabled:cursor-not-allowed disabled:opacity-50"
         >
           <svg

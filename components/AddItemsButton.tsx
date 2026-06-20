@@ -83,7 +83,7 @@ export function AddItemsButton({
   return (
     <div className="flex flex-col gap-2">
       <Button variant="ghost" onClick={handleToggle} className="self-start">
-        {isExpanded ? "Cancel" : "Add items manually"}
+        {isExpanded ? "cancel" : "add items manually"}
       </Button>
 
       {isExpanded && step === "input" && (
@@ -92,12 +92,12 @@ export function AddItemsButton({
             options={defaultTagOptions}
             value={defaultTagId ?? ""}
             onChange={(tagId) => setDefaultTagId(tagId || null)}
-            placeholder="No default tag"
+            placeholder="no default tag"
           />
           <textarea
             value={rawText}
             onChange={(e) => setRawText(e.target.value)}
-            placeholder="One item per line"
+            placeholder="one item per line"
             rows={6}
             className="w-full resize-none rounded-lg border-2 border-bark/30 bg-parchment px-3 py-2 text-sm text-bark shadow-sm transition-colors placeholder:text-bark/40 focus:outline-none focus:ring-2 focus:ring-moss"
           />
@@ -106,7 +106,7 @@ export function AddItemsButton({
             disabled={!rawText.trim()}
             className="self-start"
           >
-            Review
+            review
           </Button>
         </Card>
       )}
@@ -115,12 +115,12 @@ export function AddItemsButton({
         <Card className="flex flex-col gap-3">
           {drafts.length === 0 ? (
             <p className="text-sm text-bark/60">
-              No items to review — head back and add a few lines.
+              no items to review — head back and add a few lines.
             </p>
           ) : (
             drafts.map((draft) => (
               <div key={draft.draftId} className="flex items-center gap-2">
-                <p className="flex-1 text-sm text-bark">{draft.text}</p>
+                <p className="flex-1 text-sm text-bark">{draft.text.toLowerCase()}</p>
                 <div className="w-36">
                   <Dropdown
                     options={draftTagOptions}
@@ -128,25 +128,27 @@ export function AddItemsButton({
                     onChange={(tagId) =>
                       handleDraftTagChange(draft.draftId, tagId || null)
                     }
-                    placeholder="No tag"
+                    placeholder="no tag"
                   />
                 </div>
               </div>
             ))
           )}
 
-          {error && <p className="text-sm text-berry">{error}</p>}
+          {error && (
+            <p className="text-sm text-berry">{error?.toLowerCase()}</p>
+          )}
 
           <div className="flex gap-2">
             <Button onClick={handleSave} isLoading={status === "saving"}>
-              Save items
+              save items
             </Button>
             <Button
               variant="ghost"
               onClick={handleBack}
               disabled={status === "saving"}
             >
-              Back
+              back
             </Button>
           </div>
         </Card>

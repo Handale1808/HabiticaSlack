@@ -40,8 +40,8 @@ const allSent = items.every((item) => item.habitica_send === true);
       isLoading={isBulkSending}
     >
       {allSent
-        ? "All sent to Habitica"
-        : `Send ${unsentCount} ${unsentCount === 1 ? "item" : "items"} to Habitica`}
+        ? "all sent to Habitica"
+        : `send ${unsentCount} ${unsentCount === 1 ? "item" : "items"} to Habitica`}
     </Button>
   );
 }

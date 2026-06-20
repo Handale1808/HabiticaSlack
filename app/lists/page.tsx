@@ -193,13 +193,13 @@ export default function ListsPage() {
       )}
 
       {isLoading && (
-        <p className="text-sm text-bark/60">Gathering your lists...</p>
+        <p className="text-sm text-bark/60">gathering your lists...</p>
       )}
       {error && <p className="text-sm text-berry">{error}</p>}
 
       {!isLoading && !error && lists.length === 0 && (
         <p className="text-sm text-bark/60">
-          No lists yet — upload a done list to get started.
+          no lists yet — upload a done list to get started.
         </p>
       )}
 

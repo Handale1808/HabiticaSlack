@@ -27,16 +27,16 @@ function StatBar({ label, value, max, colorClassName }: StatBarProps) {
 
   return (
     <div className="flex items-center gap-1.5">
-      <span className="text-[10px] uppercase tracking-wide text-parchment/60 w-6">
+      <span className="text-[10px] lowercase tracking-wide text-parchment/60 w-6">
         {label}
       </span>
       <div className="w-16 h-1.5 rounded-full bg-parchment/15 overflow-hidden">
         <div
-          className={`h-full rounded-full ${colorClassName}`}
+          className={`h-full rounded-full ${colorClassName.toLowerCase()}`}
           style={{ width: `${percent}%` }}
         />
       </div>
-      <span className="text-[10px] text-parchment/50 tabular-nums">
+      <span className="text-[10px] lowercase text-parchment/50 tabular-nums">
         {Math.round(value)}/{Math.round(max)}
       </span>
     </div>
@@ -54,11 +54,11 @@ export function HabiticaStatBars({
 }: HabiticaStatBarsProps) {
   return (
     <div className="flex items-center gap-3">
-      <span className="text-xs font-semibold text-parchment">Lv {lvl}</span>
+      <span className="text-xs font-semibold text-parchment">lv {lvl}</span>
       <div className="flex flex-col gap-1">
-        <StatBar label="HP" value={hp} max={maxHealth} colorClassName="bg-moss" />
-        <StatBar label="MP" value={mp} max={maxMP} colorClassName="bg-honey" />
-        <StatBar label="XP" value={exp} max={toNextLevel} colorClassName="bg-berry" />
+        <StatBar label="hp" value={hp} max={maxHealth} colorClassName="bg-moss" />
+        <StatBar label="mp" value={mp} max={maxMP} colorClassName="bg-honey" />
+        <StatBar label="xp" value={exp} max={toNextLevel} colorClassName="bg-berry" />
       </div>
     </div>
   )
