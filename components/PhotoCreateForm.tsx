@@ -6,6 +6,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUpload } from "@/hooks/useUpload";
 import { UploadForm } from "@/components/UploadForm";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 
 interface Tag {
   id: string;
@@ -53,7 +55,7 @@ export function PhotoCreateForm({
   };
 
   return (
-    <div className="flex flex-col gap-4 border border-gray-700 rounded p-4">
+    <Card className="flex flex-col gap-4">
       <UploadForm
         tags={tags}
         createTag={createTag}
@@ -67,12 +69,9 @@ export function PhotoCreateForm({
         selectedDate={selectedDate}
         onDateChange={setSelectedDate}
       />
-      <button
-        onClick={onCancel}
-        className="border border-gray-700 rounded px-4 py-2 text-sm hover:bg-gray-900 transition-colors self-start"
-      >
+      <Button variant="ghost" onClick={onCancel} className="self-start">
         Cancel
-      </button>
-    </div>
+      </Button>
+    </Card>
   );
 }
