@@ -1,7 +1,12 @@
+// components/AddItemsButton.tsx
+
 "use client";
 
 import { useState } from "react";
 import { useAddItems } from "@/hooks/useAddItems";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Dropdown } from "@/components/ui/Dropdown";
 
 interface Tag {
   id: string;
@@ -22,7 +27,11 @@ interface AddItemsButtonProps {
   onAppended: (newItems: DoneItem[]) => void;
 }
 
-export function AddItemsButton({ listId, tags, onAppended }: AddItemsButtonProps) {
+export function AddItemsButton({
+  listId,
+  tags,
+  onAppended,
+}: AddItemsButtonProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [rawText, setRawText] = useState("");
   const [defaultTagId, setDefaultTagId] = useState<string | null>(null);
@@ -67,87 +76,80 @@ export function AddItemsButton({ listId, tags, onAppended }: AddItemsButtonProps
     resetToInput();
   };
 
+  const tagItems = tags.map((tag) => ({ id: tag.id, label: tag.name }));
+  const defaultTagOptions = [{ id: "", label: "No default tag" }, ...tagItems];
+  const draftTagOptions = [{ id: "", label: "No tag" }, ...tagItems];
+
   return (
     <div className="flex flex-col gap-2">
-      <button
-        onClick={handleToggle}
-        className="text-sm text-gray-400 hover:text-white transition-colors self-start"
-      >
+      <Button variant="ghost" onClick={handleToggle} className="self-start">
         {isExpanded ? "Cancel" : "Add items manually"}
-      </button>
+      </Button>
 
       {isExpanded && step === "input" && (
-        <div className="flex flex-col gap-2">
-          <select
+        <Card className="flex flex-col gap-3">
+          <Dropdown
+            options={defaultTagOptions}
             value={defaultTagId ?? ""}
-            onChange={(e) => setDefaultTagId(e.target.value || null)}
-            className="border border-gray-700 rounded px-3 py-2 text-sm bg-transparent focus:outline-none focus:ring-1 focus:ring-gray-500"
-          >
-            <option value="">No default tag</option>
-            {tags.map((tag) => (
-              <option key={tag.id} value={tag.id}>
-                {tag.name}
-              </option>
-            ))}
-          </select>
+            onChange={(tagId) => setDefaultTagId(tagId || null)}
+            placeholder="No default tag"
+          />
           <textarea
             value={rawText}
             onChange={(e) => setRawText(e.target.value)}
             placeholder="One item per line"
             rows={6}
-            className="border border-gray-700 rounded px-3 py-2 text-sm bg-transparent focus:outline-none focus:ring-1 focus:ring-gray-500 resize-none"
+            className="w-full resize-none rounded-lg border-2 border-bark/30 bg-parchment px-3 py-2 text-sm text-bark shadow-sm transition-colors placeholder:text-bark/40 focus:outline-none focus:ring-2 focus:ring-moss"
           />
-          <button
+          <Button
             onClick={handleReview}
             disabled={!rawText.trim()}
-            className="border border-gray-700 rounded px-4 py-2 text-sm disabled:opacity-50 hover:bg-gray-900 transition-colors self-start"
+            className="self-start"
           >
             Review
-          </button>
-        </div>
+          </Button>
+        </Card>
       )}
 
       {isExpanded && step === "review" && (
-        <div className="flex flex-col gap-2">
-          {drafts.map((draft) => (
-            <div key={draft.draftId} className="flex gap-2 items-center">
-              <p className="flex-1 text-sm">{draft.text}</p>
-              <select
-                value={draft.tagId ?? ""}
-                onChange={(e) =>
-                  handleDraftTagChange(draft.draftId, e.target.value || null)
-                }
-                className="border border-gray-700 rounded px-3 py-2 text-sm bg-transparent focus:outline-none focus:ring-1 focus:ring-gray-500"
-              >
-                <option value="">No tag</option>
-                {tags.map((tag) => (
-                  <option key={tag.id} value={tag.id}>
-                    {tag.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          ))}
+        <Card className="flex flex-col gap-3">
+          {drafts.length === 0 ? (
+            <p className="text-sm text-bark/60">
+              No items to review — head back and add a few lines.
+            </p>
+          ) : (
+            drafts.map((draft) => (
+              <div key={draft.draftId} className="flex items-center gap-2">
+                <p className="flex-1 text-sm text-bark">{draft.text}</p>
+                <div className="w-36">
+                  <Dropdown
+                    options={draftTagOptions}
+                    value={draft.tagId ?? ""}
+                    onChange={(tagId) =>
+                      handleDraftTagChange(draft.draftId, tagId || null)
+                    }
+                    placeholder="No tag"
+                  />
+                </div>
+              </div>
+            ))
+          )}
 
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {error && <p className="text-sm text-berry">{error}</p>}
 
           <div className="flex gap-2">
-            <button
-              onClick={handleSave}
-              disabled={status === "saving"}
-              className="border border-gray-700 rounded px-4 py-2 text-sm disabled:opacity-50 hover:bg-gray-900 transition-colors"
-            >
-              {status === "saving" ? "Saving..." : "Save items"}
-            </button>
-            <button
+            <Button onClick={handleSave} isLoading={status === "saving"}>
+              Save items
+            </Button>
+            <Button
+              variant="ghost"
               onClick={handleBack}
               disabled={status === "saving"}
-              className="border border-gray-700 rounded px-4 py-2 text-sm disabled:opacity-50 hover:bg-gray-900 transition-colors"
             >
               Back
-            </button>
+            </Button>
           </div>
-        </div>
+        </Card>
       )}
     </div>
   );
