@@ -131,11 +131,11 @@ export default function ListDetailPage({
           href="/lists"
           className="text-sm text-bark/60 transition-colors hover:text-moss-dark"
         >
-          Back to lists
+          back to lists
         </Link>
       </div>
 
-      <h1 className="font-display text-3xl text-bark">Done items</h1>
+      <h1 className="font-display text-3xl text-bark">done items</h1>
 
       {!isLoading && (
         <div className="w-full max-w-lg flex items-center gap-2">
