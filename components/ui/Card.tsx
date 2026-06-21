@@ -1,4 +1,12 @@
 import { ReactNode } from "react";
+import { getSprite, spriteSheets } from "@/lib/sprites/registry";
+import { getSpriteBackgroundStyle } from "@/lib/sprites/getSpriteBackgroundStyle";
+
+const cardSprite = getSprite("medival", 3);
+const cardBackgroundStyle = getSpriteBackgroundStyle(
+  spriteSheets.medival,
+  cardSprite,
+);
 
 interface CardProps {
   children: ReactNode;
@@ -7,9 +15,7 @@ interface CardProps {
 
 export function Card({ children, className = "" }: CardProps) {
   return (
-    <div
-      className={`rounded-2xl border border-bark/20 bg-parchment p-6 shadow-sm ring-1 ring-inset ring-parchment-dark/40 ${className}`}
-    >
+    <div className={`p-6 ${className}`} style={cardBackgroundStyle}>
       {children}
     </div>
   );
