@@ -1,12 +1,5 @@
 import { ReactNode } from "react";
-import { getSprite, spriteSheets } from "@/lib/sprites/registry";
-import { getSpriteBackgroundStyle } from "@/lib/sprites/getSpriteBackgroundStyle";
-
-const cardSprite = getSprite("medival", 3);
-const cardBackgroundStyle = getSpriteBackgroundStyle(
-  spriteSheets.medival,
-  cardSprite,
-);
+import { SpriteNineSlice } from "@/components/ui/SpriteNineSlice";
 
 interface CardProps {
   children: ReactNode;
@@ -15,8 +8,8 @@ interface CardProps {
 
 export function Card({ children, className = "" }: CardProps) {
   return (
-    <div className={`p-6 ${className}`} style={cardBackgroundStyle}>
-      {children}
-    </div>
+    <SpriteNineSlice sheetKey="medival" spriteId={37} className={className}>
+      <div className="p-6">{children}</div>
+    </SpriteNineSlice>
   );
 }
