@@ -1,4 +1,5 @@
 import medivalManifest from "../../public/ui/medival.json";
+import forestManifest from "../../public/ui/forest.json";
 
 export interface SpriteManifestEntry {
   id: number;
@@ -21,6 +22,12 @@ export const spriteSheets = {
     width: 1024,
     height: 1024,
     sprites: medivalManifest.sprites,
+  },
+  forest: {
+    src: "/ui/forest.png",
+    width: 1024,
+    height: 512,
+    sprites: forestManifest.sprites,
   },
 } satisfies Record<string, SpriteSheetEntry>;
 

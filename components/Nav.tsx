@@ -8,6 +8,14 @@ import { useUser } from "@/context/UserContext";
 import { HabiticaClassIcon } from "@/components/HabiticaClassIcon";
 import { HabiticaStatBars } from "@/components/HabiticaStatBars";
 import { LinkButton } from "@/components/ui/LinkButton";
+import { getSprite, spriteSheets } from "@/lib/sprites/registry";
+import { getSpriteBackgroundStyle } from "@/lib/sprites/getSpriteBackgroundStyle";
+
+const cardSprite = getSprite("medival", 20);
+const cardBackgroundStyle = getSpriteBackgroundStyle(
+  spriteSheets.medival,
+  cardSprite,
+);
 
 const navItems = [
   { href: "/login", label: "login" },
@@ -23,7 +31,10 @@ export function Nav() {
     !!currentUser?.habitica_user_id && !!currentUser?.habitica_api_token;
 
   return (
-    <nav className="w-full bg-bark/50 bg-[url('/textures/wood.png')] bg-cover bg-center bg-blend-multiply border-b border-bark-light/40 px-8 py-4 flex justify-between items-center shadow-sm">
+    <nav
+      className="w-full bg-blend-multiply border-b border-bark-light/40 px-8 py-4 flex justify-between items-center shadow-sm"
+      style={cardBackgroundStyle}
+    >
       <ul className="flex gap-6">
         {navItems.map((item) => {
           const isActive =
