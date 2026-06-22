@@ -14,7 +14,7 @@ interface Tag {
 
 interface UploadFormProps {
   tags: Tag[];
-  createTag: (name: string) => Promise<void>;
+  createTag: (name: string) => Promise<{ id: string; name: string } | null>;
   tagsLoading: boolean;
   createLoading: boolean;
   tagsError: string | null;

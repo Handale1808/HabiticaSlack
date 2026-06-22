@@ -22,7 +22,7 @@ interface AppendUploadButtonProps {
   listId: string;
   userId: string;
   tags: Tag[];
-  createTag: (name: string) => Promise<void>;
+  createTag: (name: string) => Promise<{ id: string; name: string } | null>;
   tagsLoading: boolean;
   createLoading: boolean;
   onAppended: (newItems: DoneItem[]) => void;
