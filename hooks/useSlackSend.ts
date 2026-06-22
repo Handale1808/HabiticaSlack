@@ -121,7 +121,7 @@ export function useSlackSend(
       ),
     ].sort();
 
-    const prompt = `You are categorising a done list into groups and rewriting each item as a full past-tense sentence.
+    const prompt = `You are categorising a done list into groups and rewriting each item as a full past-tense sentence written in the first person.
 
 Existing categories (prefer these, do not invent new ones unless truly necessary):
 ${existingCategories.length > 0 ? existingCategories.map((c) => `- ${c}`).join("\n") : "None yet"}
@@ -130,10 +130,10 @@ Rules:
 - Create specific, meaningful categories that describe the type of work (e.g. "Bug Fixes", "Deployments", "Implementation Plans", "UI Updates", "Backend Work"). Do not use broad catch-all labels.
 - If existing categories from the list above are specific and meaningful, reuse them. Ignore any that are too broad.
 - You may create new specific categories when needed.
-- Rewrite each item's text as a natural full past-tense sentence (e.g. "Made an implementation plan for the integration feature").
-- Write a "done" paragraph (3–4 sentences) synthesising everything accomplished. If the user provided additional done context, weave it in naturally.
-- Write a "next" paragraph (1–3 sentences) from the user's next input. If blank, write "Nothing next."
-- Write a "blocked" paragraph (1–3 sentences) from the user's blocked input. If blank, write "Nothing blocked."
+- Rewrite each item's text as a natural full past-tense sentence in the first person (e.g. "Made an implementation plan for the integration feature" or "Fixed a bug in the login flow").
+- Write a "done" paragraph (3–4 sentences) synthesising everything accomplished, written in the first person ("I fixed...", "I worked on..."). If the user provided additional done context, weave it in naturally.
+- Write a "next" paragraph (1–3 sentences) from the user's next input, written in the first person. If blank, write "Nothing next."
+- Write a "blocked" paragraph (1–3 sentences) from the user's blocked input, written in the first person. If blank, write "Nothing blocked."
 - Return only valid JSON with no markdown fences, no preamble, no explanation.
 
 User inputs:
@@ -146,7 +146,7 @@ JSON shape:
   "items": [
     { "id": "uuid-here", "category": "Implementation Plans", "slack_text": "Made an implementation plan for the integration feature." }
   ],
-  "done": "Today was productive across several areas...",
+  "done": "I had a productive day across several areas...",
   "next": "Nothing next.",
   "blocked": "Nothing blocked."
 }
