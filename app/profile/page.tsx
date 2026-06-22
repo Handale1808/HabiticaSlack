@@ -9,9 +9,12 @@ import { useUser } from "@/context/UserContext";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { FieldLabel } from "@/components/ui/FieldLabel";
+import { AvatarUpload } from "@/components/AvatarUpload";
+import { ProfileHabiticaStats } from "@/components/ProfileHabiticaStats";
+import { ProfileCustomStats } from "@/components/ProfileCustomStats";
 
 export default function ProfilePage() {
-  const { currentUser, authUser, setCurrentUser, isRehydrating } = useUser();
+  const { currentUser, authUser, setCurrentUser, isRehydrating, habiticaStats, userStats } = useUser();
   const router = useRouter();
 
   const [name, setName] = useState("");
@@ -19,6 +22,7 @@ export default function ProfilePage() {
   const [habiticaApiToken, setHabiticaApiToken] = useState("");
   const [slackListWebhook, setSlackListWebhook] = useState("");
   const [slackSummaryWebhook, setSlackSummaryWebhook] = useState("");
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -57,7 +61,26 @@ export default function ProfilePage() {
     setError(null);
     setIsLoading(true);
 
-    const payload = {
+    let avatarUrl: string | undefined;
+
+    if (avatarFile) {
+      const ext = avatarFile.name.split(".").pop() ?? "jpg";
+      const path = `${authUser.id}/${Date.now()}.${ext}`;
+      const { error: storageErr } = await supabase.storage
+        .from("avatars")
+        .upload(path, avatarFile, { upsert: true });
+
+      if (storageErr) {
+        setError(storageErr.message.toLowerCase());
+        setIsLoading(false);
+        return;
+      }
+
+      const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
+      avatarUrl = urlData.publicUrl;
+    }
+
+    const payload: Record<string, unknown> = {
       user_id: authUser.id,
       name: name.trim(),
       habitica_user_id: habiticaUserId.trim(),
@@ -66,6 +89,13 @@ export default function ProfilePage() {
       slack_summary_webhook: slackSummaryWebhook.trim() || null,
     };
 
+    if (avatarUrl !== undefined) {
+      payload.avatar_url = avatarUrl;
+    }
+
+    const selectFields =
+      "id, name, habitica_user_id, habitica_api_token, slack_list_webhook, slack_summary_webhook, avatar_url";
+
     let data, err;
 
     if (currentUser) {
@@ -73,17 +103,13 @@ export default function ProfilePage() {
         .from("Users")
         .update(payload)
         .eq("user_id", authUser.id)
-        .select(
-          "id, name, habitica_user_id, habitica_api_token, slack_list_webhook, slack_summary_webhook",
-        )
+        .select(selectFields)
         .single());
     } else {
       ({ data, error: err } = await supabase
         .from("Users")
         .insert(payload)
-        .select(
-          "id, name, habitica_user_id, habitica_api_token, slack_list_webhook, slack_summary_webhook",
-        )
+        .select(selectFields)
         .single());
     }
 
@@ -94,7 +120,10 @@ export default function ProfilePage() {
       return;
     }
 
-    if (data) setCurrentUser(data);
+    if (data) {
+      setCurrentUser(data);
+      setAvatarFile(null);
+    }
     router.push("/upload");
   };
 
@@ -105,6 +134,11 @@ export default function ProfilePage() {
       </h1>
 
       <Card className="flex w-full max-w-sm flex-col gap-3">
+        <AvatarUpload
+          currentAvatarUrl={currentUser?.avatar_url ?? null}
+          onFileSelect={(file) => setAvatarFile(file)}
+        />
+
         <FieldLabel label="your name">
           <input
             type="text"
@@ -164,6 +198,30 @@ export default function ProfilePage() {
 
         {error && <p className="text-sm text-berry">{error}</p>}
       </Card>
+
+      {habiticaStats && (
+        <ProfileHabiticaStats
+          characterClass={habiticaStats.class}
+          lvl={habiticaStats.lvl}
+          hp={habiticaStats.hp}
+          maxHealth={habiticaStats.maxHealth}
+          mp={habiticaStats.mp}
+          maxMP={habiticaStats.maxMP}
+          exp={habiticaStats.exp}
+          toNextLevel={habiticaStats.toNextLevel}
+        />
+      )}
+
+      {userStats && (
+        <ProfileCustomStats
+          level={userStats.level}
+          acorns={userStats.acorns}
+          wonder={userStats.wonder}
+          maxWonder={userStats.maxWonder}
+          magic={userStats.magic}
+          maxMagic={userStats.maxMagic}
+        />
+      )}
     </main>
   );
 }

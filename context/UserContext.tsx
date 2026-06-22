@@ -10,6 +10,8 @@ import {
 import type { User as AuthUser } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabaseClient";
 import { useHabiticaStats } from "@/hooks/useHabiticaStats";
+import { useUserStats } from "@/hooks/useUserStats";
+import type { UserStats } from "@/types/stats";
 
 interface User {
   id: string;
@@ -18,6 +20,7 @@ interface User {
   habitica_api_token: string;
   slack_list_webhook: string | null;
   slack_summary_webhook: string | null;
+  avatar_url: string | null;
 }
 
 interface UserContextValue {
@@ -29,6 +32,8 @@ interface UserContextValue {
   isHabiticaStatsLoading: boolean;
   habiticaStatsError: string | null;
   refreshHabiticaStats: () => void;
+  userStats: UserStats | null;
+  setUserStats: (s: UserStats | null) => void;
 }
 
 const UserContext = createContext<UserContextValue | null>(null);
@@ -37,7 +42,7 @@ async function fetchProfileRow(authUid: string): Promise<User | null> {
   const { data } = await supabase
     .from("Users")
     .select(
-      "id, name, habitica_user_id, habitica_api_token, slack_list_webhook, slack_summary_webhook",
+      "id, name, habitica_user_id, habitica_api_token, slack_list_webhook, slack_summary_webhook, avatar_url",
     )
     .eq("user_id", authUid)
     .single();
@@ -58,6 +63,13 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     currentUser?.habitica_user_id ?? "",
     currentUser?.habitica_api_token ?? "",
   );
+
+  const { userStats } = useUserStats(currentUser?.id ?? null);
+  const [userStatsState, setUserStatsState] = useState<UserStats | null>(null);
+
+  useEffect(() => {
+    setUserStatsState(userStats);
+  }, [userStats]);
 
   useEffect(() => {
     let mounted = true;
@@ -113,6 +125,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         isHabiticaStatsLoading,
         habiticaStatsError,
         refreshHabiticaStats,
+        userStats: userStatsState,
+        setUserStats: setUserStatsState,
       }}
     >
       {children}
