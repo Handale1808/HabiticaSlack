@@ -36,16 +36,16 @@ export function usePurchases(userId: string | null): {
 
       const itemIds = [...new Set(purchaseRows.map((r) => r.item_id as string))];
 
-      let imageMap: Record<string, string> = {};
+      let spriteKeyMap: Record<string, string | null> = {};
       if (itemIds.length > 0) {
         const { data: itemRows } = await supabase
           .from("StoreItems")
-          .select("id, image_url")
+          .select("id, sprite_key")
           .in("id", itemIds);
 
         if (itemRows) {
-          for (const item of itemRows as { id: string; image_url: string }[]) {
-            imageMap[item.id] = item.image_url;
+          for (const item of itemRows as { id: string; sprite_key: string | null }[]) {
+            spriteKeyMap[item.id] = item.sprite_key;
           }
         }
       }
@@ -60,7 +60,7 @@ export function usePurchases(userId: string | null): {
         type: row.type as string,
         expires_at: row.expires_at as string | null,
         created_at: row.created_at as string,
-        image_url: imageMap[row.item_id as string] ?? "/pets/placeholder.svg",
+        sprite_key: spriteKeyMap[row.item_id as string] ?? null,
       }));
 
       setPurchases(mapped);

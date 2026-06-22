@@ -2,6 +2,7 @@
 
 import { useUser } from "@/context/UserContext";
 import { WanderingPet } from "@/components/WanderingPet";
+import { petSpriteSheets, type PetSpriteSheetKey } from "@/lib/sprites/petRegistry";
 
 export function PetLayer() {
   const { purchases } = useUser();
@@ -20,13 +21,16 @@ export function PetLayer() {
         zIndex: 50,
       }}
     >
-      {purchases.map((purchase) => (
-        <WanderingPet
-          key={purchase.id}
-          id={purchase.id}
-          imageUrl={purchase.image_url}
-        />
-      ))}
+      {purchases.map((purchase) => {
+        if (!purchase.sprite_key || !(purchase.sprite_key in petSpriteSheets)) return null;
+        return (
+          <WanderingPet
+            key={purchase.id}
+            id={purchase.id}
+            spriteKey={purchase.sprite_key as PetSpriteSheetKey}
+          />
+        );
+      })}
     </div>
   );
 }

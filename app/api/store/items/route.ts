@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
 
   const { data: items, error: itemsError } = await supabase
     .from("StoreItems")
-    .select("id, name, description, image_url, cost, type, min_level, created_at")
+    .select("id, name, description, sprite_key, cost, type, min_level, created_at")
     .order("min_level", { ascending: true })
     .order("cost", { ascending: true });
 
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
         id: item.id,
         name: null,
         description: null,
-        image_url: null,
+        sprite_key: null,
         cost: null,
         type: item.type,
         min_level: item.min_level,

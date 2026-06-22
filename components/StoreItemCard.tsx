@@ -1,5 +1,7 @@
 import { MysteryCard } from "@/components/MysteryCard";
 import { Button } from "@/components/ui/Button";
+import { AnimatedPet } from "@/components/AnimatedPet";
+import { petSpriteSheets, type PetSpriteSheetKey } from "@/lib/sprites/petRegistry";
 import type { MaskedStoreItem } from "@/types/store";
 
 interface StoreItemCardProps {
@@ -23,16 +25,27 @@ export function StoreItemCard({
     return <MysteryCard index={index} />;
   }
 
+  const isValidSpriteKey = item.sprite_key !== null && item.sprite_key in petSpriteSheets;
+
   return (
     <div className="flex flex-col items-center gap-3 rounded-lg border-2 border-bark/30 bg-parchment/60 p-5 text-center">
       <div className="relative flex h-16 w-16 items-center justify-center">
-        <img
-          src={item.image_url ?? "/pets/placeholder.svg"}
-          alt={item.name}
-          width={48}
-          height={48}
-          style={{ imageRendering: "pixelated" }}
-        />
+        {isValidSpriteKey ? (
+          <AnimatedPet
+            spriteKey={item.sprite_key as PetSpriteSheetKey}
+            seed={item.id}
+            displayScale={3}
+            frameIndex={0}
+          />
+        ) : (
+          <img
+            src="/pets/placeholder.svg"
+            alt={item.name}
+            width={48}
+            height={48}
+            style={{ imageRendering: "pixelated" }}
+          />
+        )}
         {isOwned && (
           <span className="absolute -right-1 -top-1 rounded-full bg-moss px-1.5 py-0.5 text-[10px] font-semibold text-parchment">
             owned

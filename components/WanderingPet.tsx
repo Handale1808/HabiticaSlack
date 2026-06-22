@@ -1,43 +1,38 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { AnimatedPet } from "@/components/AnimatedPet";
+import { seededRandom } from "@/lib/seededRandom";
+import type { PetSpriteSheetKey } from "@/lib/sprites/petRegistry";
+import { petSpriteSheets, getPetFrames } from "@/lib/sprites/petRegistry";
+
+const SPEED_MIN = 0.4;
+const SPEED_MAX = 0.9;
+const DISPLAY_SCALE = 3;
 
 interface WanderingPetProps {
-  imageUrl: string;
+  spriteKey: PetSpriteSheetKey;
   id: string;
 }
 
-const PET_SIZE = 48;
-const SPEED_MIN = 0.4;
-const SPEED_MAX = 0.9;
-
-function seededRandom(seed: string): () => number {
-  let h = 0;
-  for (let i = 0; i < seed.length; i++) {
-    h = (Math.imul(31, h) + seed.charCodeAt(i)) | 0;
-  }
-  return () => {
-    h = (Math.imul(16807, h)) | 0;
-    return ((h >>> 0) / 0xffffffff);
-  };
-}
-
-export function WanderingPet({ imageUrl, id }: WanderingPetProps) {
+export function WanderingPet({ spriteKey, id }: WanderingPetProps) {
   const rand = seededRandom(id);
-  const initialX = rand() * Math.max(0, (typeof window !== "undefined" ? window.innerWidth : 800) - PET_SIZE);
+  const frames = getPetFrames(spriteKey);
+  const maxW = frames.length > 0 ? Math.max(...frames.map((f) => f.width)) * DISPLAY_SCALE : 48;
+
+  const initialX = rand() * Math.max(0, (typeof window !== "undefined" ? window.innerWidth : 800) - maxW);
   const initialDir = rand() > 0.5 ? 1 : -1;
   const speed = SPEED_MIN + rand() * (SPEED_MAX - SPEED_MIN);
 
   const [x, setX] = useState(initialX);
   const dirRef = useRef(initialDir);
   const xRef = useRef(initialX);
-  const boundaryRef = useRef((typeof window !== "undefined" ? window.innerWidth : 800) - PET_SIZE);
+  const boundaryRef = useRef((typeof window !== "undefined" ? window.innerWidth : 800) - maxW);
   const rafRef = useRef<number | null>(null);
-  const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
     const updateBoundary = () => {
-      boundaryRef.current = window.innerWidth - PET_SIZE;
+      boundaryRef.current = window.innerWidth - maxW;
     };
     window.addEventListener("resize", updateBoundary);
     updateBoundary();
@@ -61,28 +56,25 @@ export function WanderingPet({ imageUrl, id }: WanderingPetProps) {
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
       window.removeEventListener("resize", updateBoundary);
     };
-  }, [speed]);
+  }, [speed, maxW]);
 
-  if (hidden) return null;
+  if (!(spriteKey in petSpriteSheets)) return null;
 
   return (
-    <img
-      src={imageUrl}
-      alt=""
-      aria-hidden="true"
-      width={PET_SIZE}
-      height={PET_SIZE}
-      onError={() => setHidden(true)}
+    <div
       style={{
         position: "absolute",
         bottom: 8,
         left: x,
-        width: PET_SIZE,
-        height: PET_SIZE,
-        transform: `scaleX(${dirRef.current})`,
-        imageRendering: "pixelated",
         pointerEvents: "none",
       }}
-    />
+    >
+      <AnimatedPet
+        spriteKey={spriteKey}
+        seed={id}
+        displayScale={DISPLAY_SCALE}
+        flipped={dirRef.current === -1}
+      />
+    </div>
   );
 }
