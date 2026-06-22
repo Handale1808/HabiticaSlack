@@ -101,8 +101,8 @@ export function ManualCreateForm({
           </FieldLabel>
           <div className="flex gap-2">
             <Button
-              onClick={() => saveList(completedAt)}
-              disabled={status === "saving"}
+              onClick={handleReview}
+              disabled={!rawText.trim()}
             >
               review
             </Button>
