@@ -4,6 +4,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { useDoneItems } from "@/hooks/useDoneItems";
 import { DoneItemRow } from "@/components/DoneItemRow";
@@ -20,6 +21,7 @@ import { format, parseISO } from "date-fns";
 import { CompletedDateEditor } from "@/components/CompletedDateEditor";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { IconButton } from "@/components/ui/IconButton";
 
 interface DoneItem {
   id: string;
@@ -35,6 +37,7 @@ export default function ListDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = React.use(params);
+  const router = useRouter();
 
   const [initialItems, setInitialItems] = useState<DoneItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -137,6 +140,15 @@ export default function ListDetailPage({
     setInitialItems((prev) => [...prev, ...newItems]);
   };
 
+  const handleDeleteList = async () => {
+    if (!window.confirm("delete this list and all its items?")) return;
+
+    await supabase.from("DoneItems").delete().eq("list_id", id);
+    await supabase.from("Lists").delete().eq("id", id);
+
+    router.push("/lists");
+  };
+
   return (
     <main className="min-h-screen flex flex-col items-center gap-8 p-8">
       <div className="w-full max-w-lg">
@@ -148,7 +160,23 @@ export default function ListDetailPage({
         </Link>
       </div>
 
-      <h1 className="font-display text-3xl text-bark">done items</h1>
+      <div className="flex items-center gap-3">
+        <h1 className="font-display text-3xl text-bark">done items</h1>
+        <IconButton onClick={handleDeleteList} aria-label="delete list">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-3.5 w-3.5"
+            aria-hidden="true"
+          >
+            <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
+          </svg>
+        </IconButton>
+      </div>
 
       {!isLoading && (
         <div className="w-full max-w-lg flex items-center gap-2">
