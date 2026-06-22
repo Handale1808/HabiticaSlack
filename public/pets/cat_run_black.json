@@ -1,0 +1,77 @@
+{
+  "source_image": "cat_run_black.png",
+  "image_width": 224,
+  "image_height": 32,
+  "transparent_pixel_ratio": 0.6635,
+  "alpha_threshold_used": 10,
+  "connectivity": 8,
+  "raw_components_detected": 7,
+  "components_filtered_as_noise": 0,
+  "main_sprite_count": 7,
+  "small_sprite_count": 0,
+  "sprites": [
+    {
+      "id": 1,
+      "x": 129,
+      "y": 6,
+      "width": 27,
+      "height": 24,
+      "area": 361,
+      "category": "main"
+    },
+    {
+      "id": 2,
+      "x": 100,
+      "y": 6,
+      "width": 24,
+      "height": 24,
+      "area": 359,
+      "category": "main"
+    },
+    {
+      "id": 3,
+      "x": 4,
+      "y": 8,
+      "width": 24,
+      "height": 22,
+      "area": 357,
+      "category": "main"
+    },
+    {
+      "id": 4,
+      "x": 161,
+      "y": 6,
+      "width": 27,
+      "height": 20,
+      "area": 351,
+      "category": "main"
+    },
+    {
+      "id": 5,
+      "x": 193,
+      "y": 6,
+      "width": 27,
+      "height": 20,
+      "area": 351,
+      "category": "main"
+    },
+    {
+      "id": 6,
+      "x": 36,
+      "y": 10,
+      "width": 24,
+      "height": 20,
+      "area": 317,
+      "category": "main"
+    },
+    {
+      "id": 7,
+      "x": 68,
+      "y": 10,
+      "width": 24,
+      "height": 20,
+      "area": 316,
+      "category": "main"
+    }
+  ]
+}

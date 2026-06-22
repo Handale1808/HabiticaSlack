@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
   // Verify the user's level allows purchasing this item
   const { data: itemRow } = await supabase
     .from("StoreItems")
-    .select("min_level")
+    .select("min_level, cost, name")
     .eq("id", itemId)
     .single();
 
@@ -71,6 +71,13 @@ export async function POST(request: NextRequest) {
   }
 
   const result = rpcResult as { new_acorn_balance: number; purchase_id: string };
+
+  await supabase.from("StatLedger").insert({
+    user_id: user.id,
+    stat_type: "acorns",
+    amount: -(itemRow.cost as number),
+    reason: `purchase:${itemRow.name as string}`,
+  });
 
   return NextResponse.json({
     newAcornBalance: result.new_acorn_balance,

@@ -21,10 +21,12 @@ type GroupedDay = {
 };
 
 function parseReason(reason: string): string {
-  // format: daily-award:YYYY-MM-DD:condition-name
   const parts = reason.split(":");
   if (parts[0] === "daily-award" && parts.length >= 3) {
     return parts.slice(2).join(":").replace(/-/g, " ");
+  }
+  if (parts[0] === "purchase" && parts.length >= 2) {
+    return `bought ${parts.slice(1).join(":")}`;
   }
   return reason;
 }
@@ -107,7 +109,7 @@ export default function PointsHistoryPage() {
                 <h2 className="font-display text-lg text-bark">{date}</h2>
                 <span className="text-xs text-bark/50">
                   {Object.entries(totals)
-                    .map(([type, total]) => `+${total} ${type}`)
+                    .map(([type, total]) => `${total >= 0 ? "+" : ""}${total} ${type}`)
                     .join(" · ")}
                 </span>
               </div>
@@ -117,7 +119,7 @@ export default function PointsHistoryPage() {
                   <li key={entry.id} className="flex items-center justify-between text-sm">
                     <span className="text-bark/80 capitalize">{parseReason(entry.reason)}</span>
                     <span className="text-bark font-medium">
-                      +{entry.amount} {entry.stat_type}
+                      {entry.amount >= 0 ? "+" : ""}{entry.amount} {entry.stat_type}
                     </span>
                   </li>
                 ))}

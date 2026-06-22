@@ -1,0 +1,50 @@
+{
+  "source_image": "WhiteChickenWalking-Sheet.png",
+  "image_width": 64,
+  "image_height": 16,
+  "transparent_pixel_ratio": 0.4424,
+  "alpha_threshold_used": 10,
+  "connectivity": 8,
+  "raw_components_detected": 4,
+  "components_filtered_as_noise": 0,
+  "main_sprite_count": 4,
+  "small_sprite_count": 0,
+  "sprites": [
+    {
+      "id": 1,
+      "x": 48,
+      "y": 1,
+      "width": 15,
+      "height": 15,
+      "area": 151,
+      "category": "main"
+    },
+    {
+      "id": 2,
+      "x": 0,
+      "y": 1,
+      "width": 15,
+      "height": 15,
+      "area": 150,
+      "category": "main"
+    },
+    {
+      "id": 3,
+      "x": 16,
+      "y": 2,
+      "width": 15,
+      "height": 14,
+      "area": 136,
+      "category": "main"
+    },
+    {
+      "id": 4,
+      "x": 32,
+      "y": 2,
+      "width": 15,
+      "height": 14,
+      "area": 134,
+      "category": "main"
+    }
+  ]
+}
