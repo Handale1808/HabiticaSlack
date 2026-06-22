@@ -1,32 +1,39 @@
 import { ReactNode } from "react";
 import Link from "next/link";
+import { getSprite, spriteSheets } from "@/lib/sprites/registry";
+import { getSpriteBackgroundStyle } from "@/lib/sprites/getSpriteBackgroundStyle";
 
 type LinkButtonVariant = "shiny";
 
 interface LinkButtonProps {
   href: string;
   variant?: LinkButtonVariant;
+  scale?: number;
   children: ReactNode;
   className?: string;
 }
 
-const variantStyles: Record<LinkButtonVariant, string> = {
-  shiny:
-    "text-parchment border-2 border-moss-dark/50 bg-[image:linear-gradient(to_bottom,rgba(255,255,255,0.25)_0%,rgba(255,255,255,0)_45%,rgba(0,0,0,0.05)_100%),linear-gradient(to_bottom,var(--color-moss),var(--color-moss-dark))] shadow-[inset_0_1px_0_rgba(255,255,255,0.35),inset_0_-2px_3px_rgba(0,0,0,0.15),0_1px_3px_rgba(0,0,0,0.2)] hover:brightness-105 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-2px_3px_rgba(0,0,0,0.18),0_2px_4px_rgba(0,0,0,0.25)] active:translate-y-px active:shadow-[inset_0_1px_3px_rgba(0,0,0,0.25)]",
-};
+const SPRITE_ID = 52;
+const sprite = getSprite("forest", SPRITE_ID);
+const spriteStyle = getSpriteBackgroundStyle(spriteSheets.forest, sprite);
 
 export function LinkButton({
   href,
-  variant = "shiny",
+  scale = 1.5,
   children,
   className = "",
 }: LinkButtonProps) {
   return (
     <Link
       href={href}
-      className={`inline-flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-semibold tracking-wide transition-all duration-150 ${variantStyles[variant]} ${className}`}
+      className={`relative inline-flex items-center justify-center text-sm font-semibold tracking-wide text-parchment transition-all duration-150 ${className}`}
+      style={{ width: sprite.width * scale, height: sprite.height * scale }}
     >
-      {children}
+      <div
+        className="absolute inset-0 transition-[filter] duration-150 hover:brightness-125"
+        style={spriteStyle}
+      />
+      <span className="relative z-10">{children}</span>
     </Link>
   );
 }

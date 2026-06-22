@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { SpriteNineSlice } from "@/components/ui/SpriteNineSlice";
 
 type ButtonVariant = "primary" | "secondary" | "ghost" | "shiny";
 
@@ -13,14 +14,17 @@ interface ButtonProps {
 }
 
 const variantStyles: Record<ButtonVariant, string> = {
-  primary:
-    "bg-linear-to-b from-bark-light to-bark text-parchment border-2 border-parchment-dark/40 shadow-md hover:brightness-110 hover:shadow-lg active:translate-y-px",
-  secondary:
-    "bg-parchment text-bark border-2 border-bark/30 shadow-sm hover:bg-parchment-dark hover:border-bark/50",
+  primary: "text-moss-light hover:text-parchment transition-colors duration-150",
+  secondary: "text-moss-light hover:text-parchment transition-colors duration-150",
   ghost:
     "bg-transparent text-bark border-2 border-transparent hover:text-moss-dark hover:underline underline-offset-4",
-  shiny:
-    "text-parchment border-2 border-moss-dark/50 bg-[image:linear-gradient(to_bottom,rgba(255,255,255,0.25)_0%,rgba(255,255,255,0)_45%,rgba(0,0,0,0.05)_100%),linear-gradient(to_bottom,var(--color-moss),var(--color-moss-dark))] shadow-[inset_0_1px_0_rgba(255,255,255,0.35),inset_0_-2px_3px_rgba(0,0,0,0.15),0_1px_3px_rgba(0,0,0,0.2)] hover:brightness-105 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-2px_3px_rgba(0,0,0,0.18),0_2px_4px_rgba(0,0,0,0.25)] active:translate-y-px active:shadow-[inset_0_1px_3px_rgba(0,0,0,0.25)]",
+  shiny: "text-parchment",
+};
+
+const spriteVariants: Partial<Record<ButtonVariant, number>> = {
+  primary: 24,
+  secondary: 24,
+  shiny: 25,
 };
 
 export function Button({
@@ -33,21 +37,31 @@ export function Button({
   className = "",
 }: ButtonProps) {
   const isDisabled = disabled || isLoading;
+  const spriteId = spriteVariants[variant];
 
   return (
     <button
       type={type}
       onClick={onClick}
       disabled={isDisabled}
-      className={`inline-flex items-center justify-center gap-2 rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md px-5 py-2.5 text-sm font-semibold tracking-wide transition-all duration-150 disabled:pointer-events-none disabled:opacity-50 ${variantStyles[variant]} ${className}`}
+      className={`relative inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold tracking-wide transition-all duration-150 disabled:pointer-events-none disabled:opacity-50 ${variantStyles[variant]} ${className}`}
     >
-      {isLoading && (
-        <span
-          aria-hidden="true"
-          className="h-3.5 w-3.5 animate-spin lowercase rounded-full border-2 border-current border-t-transparent"
+      {spriteId !== undefined && (
+        <SpriteNineSlice
+          sheetKey="forest"
+          spriteId={spriteId}
+          className="absolute inset-0 w-full h-full transition-[filter] duration-150 hover:brightness-125"
         />
       )}
-      <span>{children}</span>
+      <span className="relative z-10 inline-flex items-center gap-2">
+        {isLoading && (
+          <span
+            aria-hidden="true"
+            className="h-3.5 w-3.5 animate-spin lowercase rounded-full border-2 border-current border-t-transparent"
+          />
+        )}
+        {children}
+      </span>
     </button>
   );
 }

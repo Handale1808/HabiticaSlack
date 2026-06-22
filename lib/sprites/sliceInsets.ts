@@ -23,9 +23,7 @@ export function getSliceInsets(
   const insets = sliceInsets[sheetKey]?.[spriteId];
 
   if (!insets) {
-    throw new Error(
-      `getSliceInsets: no slice insets configured for sprite id ${spriteId} on sheet "${sheetKey}".`,
-    );
+    return { top: 4, right: 4, bottom: 4, left: 4 };
   }
 
   return insets;
