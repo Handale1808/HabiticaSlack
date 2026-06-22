@@ -187,6 +187,21 @@ Return only the conditions that were met as a JSON array with "name" and "amount
   return data.choices[0].message.content;
 }
 
+/** @param {string} appUserId */
+async function resolveAuthUserId(appUserId) {
+  const { data, error } = await supabase.rpc("get_auth_user_id", { app_user_id: appUserId });
+
+  if (error) {
+    console.error(`Could not resolve auth user_id for app user ${appUserId}:`, error.message);
+    return null;
+  }
+  if (!data) {
+    console.error(`No Users row found for app user ${appUserId}.`);
+    return null;
+  }
+  return data;
+}
+
 async function processUser(userId) {
   const activity = await fetchUserActivity(userId);
 
@@ -244,7 +259,13 @@ async function processUser(userId) {
     return { awarded: [] };
   }
 
-  const ledgerRows = validatedAwards.map(({ conditionName: _drop, ...row }) => row);
+  const authUserId = await resolveAuthUserId(userId);
+  if (!authUserId) return null;
+
+  const ledgerRows = validatedAwards.map(({ conditionName: _drop, ...row }) => ({
+    ...row,
+    user_id: authUserId,
+  }));
   const { error: insertErr } = await supabase.from("StatLedger").insert(ledgerRows);
 
   if (insertErr) {
@@ -256,7 +277,7 @@ async function processUser(userId) {
   const { data: statsRow, error: statsErr } = await supabase
     .from("UserStats")
     .select("user_id, acorns, wonder, magic")
-    .eq("user_id", userId)
+    .eq("user_id", authUserId)
     .maybeSingle();
 
   if (statsErr) {
@@ -271,7 +292,7 @@ async function processUser(userId) {
 
   if (!statsRow) {
     const { error: insertStatsErr } = await supabase.from("UserStats").insert({
-      user_id: userId,
+      user_id: authUserId,
       level: 1,
       acorns: totals.acorns,
       wonder: totals.wonder,
@@ -316,7 +337,13 @@ async function main() {
   let totalAwards = 0;
 
   for (const userId of activeUserIds) {
-    const alreadyDone = await isAlreadyAwarded(userId);
+    const authUserId = await resolveAuthUserId(userId);
+    if (!authUserId) {
+      console.log(`User ${userId}: could not resolve auth user_id — skipping.`);
+      continue;
+    }
+
+    const alreadyDone = await isAlreadyAwarded(authUserId);
     if (alreadyDone) {
       console.log(`User ${userId}: already awarded today — skipping.`);
       totalSkipped++;

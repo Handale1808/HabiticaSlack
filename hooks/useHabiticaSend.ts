@@ -2,6 +2,22 @@ import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useUser } from "@/context/UserContext";
 
+async function fetchWithRetry(
+  url: string,
+  options: RequestInit,
+  maxRetries = 5,
+): Promise<Response> {
+  let delay = 2000
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    const response = await fetch(url, options)
+    if (response.status !== 429 || attempt === maxRetries) return response
+    await new Promise((resolve) => setTimeout(resolve, delay))
+    delay *= 2
+  }
+  // unreachable but satisfies TS
+  return fetch(url, options)
+}
+
 interface DoneItem {
   id: string;
   text: string;
@@ -41,7 +57,7 @@ export function useHabiticaSend(
     };
 
     try {
-      const createResponse = await fetch(
+      const createResponse = await fetchWithRetry(
         "https://habitica.com/api/v3/tasks/user",
         {
           method: "POST",
@@ -61,7 +77,7 @@ export function useHabiticaSend(
       const createJson = await createResponse.json();
       const habiticaTaskId: string = createJson.data.id;
 
-      const scoreResponse = await fetch(
+      const scoreResponse = await fetchWithRetry(
         `https://habitica.com/api/v3/tasks/${habiticaTaskId}/score/up`,
         {
           method: "POST",
