@@ -64,7 +64,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     currentUser?.habitica_api_token ?? "",
   );
 
-  const { userStats } = useUserStats(currentUser?.id ?? null);
+  const { userStats } = useUserStats(authUser?.id ?? null);
   const [userStatsState, setUserStatsState] = useState<UserStats | null>(null);
 
   useEffect(() => {

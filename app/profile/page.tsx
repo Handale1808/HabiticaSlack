@@ -123,6 +123,16 @@ export default function ProfilePage() {
     if (data) {
       setCurrentUser(data);
       setAvatarFile(null);
+
+      if (!currentUser) {
+        await supabase.from("UserStats").insert({
+          user_id: authUser.id,
+          level: 1,
+          acorns: 50,
+          wonder: 0,
+          magic: 0,
+        });
+      }
     }
     router.push("/upload");
   };
