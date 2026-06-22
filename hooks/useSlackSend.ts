@@ -131,6 +131,7 @@ Rules:
 - If existing categories from the list above are specific and meaningful, reuse them. Ignore any that are too broad.
 - You may create new specific categories when needed.
 - Rewrite each item's text as a natural full past-tense sentence in the first person (e.g. "Made an implementation plan for the integration feature" or "Fixed a bug in the login flow").
+- Do not include filler phrases, self-congratulatory language, or subjective commentary (e.g. "It was a productive day", "Lots got done", "A great day overall"). State facts only.
 - Write a "done" paragraph (3–4 sentences) synthesising everything accomplished, written in the first person ("I fixed...", "I worked on..."). If the user provided additional done context, weave it in naturally.
 - Write a "next" paragraph (1–3 sentences) from the user's next input, written in the first person. If blank, write "Nothing next."
 - Write a "blocked" paragraph (1–3 sentences) from the user's blocked input, written in the first person. If blank, write "Nothing blocked."
