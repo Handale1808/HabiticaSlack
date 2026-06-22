@@ -49,7 +49,7 @@ export function Nav() {
                   ) : (
                     <Link
                       href={item.href}
-                      className="text-sm rounded-full px-3 py-1.5 transition-colors text-parchment/60 hover:bg-parchment/10 hover:text-parchment"
+                      className="text-sm rounded-full px-3 py-1.5 transition-colors text-bark hover:bg-parchment/10 hover:text-parchment"
                     >
                       {item.label}
                     </Link>
@@ -74,7 +74,7 @@ export function Nav() {
             {currentUser && (
               <button
                 onClick={handleSignOut}
-                className="text-sm rounded-full px-3 py-1.5 transition-colors text-parchment/60 hover:bg-parchment/10 hover:text-parchment"
+                className="text-sm rounded-full px-3 py-1.5 transition-colors text-bark hover:bg-parchment/10 hover:text-parchment"
               >
                 sign out
               </button>
