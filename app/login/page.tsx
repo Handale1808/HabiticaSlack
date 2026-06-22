@@ -14,6 +14,8 @@ export default function LoginPage() {
   const [nameInput, setNameInput] = useState("");
   const [habiticaUserIdInput, setHabiticaUserIdInput] = useState("");
   const [habiticaApiTokenInput, setHabiticaApiTokenInput] = useState("");
+  const [slackListWebhookInput, setSlackListWebhookInput] = useState("");
+  const [slackSummaryWebhookInput, setSlackSummaryWebhookInput] = useState("");
 
   const [credentialPromptUserId, setCredentialPromptUserId] = useState<
     string | null
@@ -44,6 +46,8 @@ export default function LoginPage() {
       nameInput.trim(),
       habiticaUserIdInput.trim(),
       habiticaApiTokenInput.trim(),
+      slackListWebhookInput.trim(),
+      slackSummaryWebhookInput.trim(),
     );
     if (user) {
       setCurrentUser(user);
@@ -56,6 +60,8 @@ export default function LoginPage() {
     name: string;
     habitica_user_id: string;
     habitica_api_token: string;
+    slack_list_webhook: string | null;
+    slack_summary_webhook: string | null;
   }) => {
     if (user.habitica_user_id && user.habitica_api_token) {
       setCurrentUser(user);
@@ -110,12 +116,32 @@ export default function LoginPage() {
             className="w-full rounded-lg border-2 border-bark/30 bg-parchment px-3 py-2 text-sm text-bark shadow-sm transition-colors placeholder:text-bark/40 focus:outline-none focus:ring-2 focus:ring-moss"
           />
         </FieldLabel>
+        <FieldLabel label="Slack list webhook">
+          <input
+            type="text"
+            value={slackListWebhookInput}
+            onChange={(e) => setSlackListWebhookInput(e.target.value)}
+            placeholder="https://hooks.slack.com/..."
+            className="w-full rounded-lg border-2 border-bark/30 bg-parchment px-3 py-2 text-sm text-bark shadow-sm transition-colors placeholder:text-bark/40 focus:outline-none focus:ring-2 focus:ring-moss"
+          />
+        </FieldLabel>
+        <FieldLabel label="Slack summary webhook">
+          <input
+            type="text"
+            value={slackSummaryWebhookInput}
+            onChange={(e) => setSlackSummaryWebhookInput(e.target.value)}
+            placeholder="https://hooks.slack.com/..."
+            className="w-full rounded-lg border-2 border-bark/30 bg-parchment px-3 py-2 text-sm text-bark shadow-sm transition-colors placeholder:text-bark/40 focus:outline-none focus:ring-2 focus:ring-moss"
+          />
+        </FieldLabel>
         <Button
           onClick={handleCreate}
           disabled={
             !nameInput.trim() ||
             !habiticaUserIdInput.trim() ||
-            !habiticaApiTokenInput.trim()
+            !habiticaApiTokenInput.trim() ||
+            !slackListWebhookInput.trim() ||
+            !slackSummaryWebhookInput.trim()
           }
           isLoading={isLoading}
         >

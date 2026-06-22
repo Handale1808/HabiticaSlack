@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { useUser } from "@/context/UserContext";
 
 interface DoneItem {
   id: string;
@@ -64,6 +65,7 @@ export function useSlackSend(
   listId: string,
   items: DoneItem[],
 ): UseSlackSendReturn {
+  const { currentUser } = useUser();
   const [enrichedItems, setEnrichedItems] = useState<EnrichedItem[]>([]);
   const [done, setDone] = useState<string | null>(null);
   const [nextText, setNextText] = useState<string | null>(null);
@@ -242,6 +244,15 @@ ${JSON.stringify(workingItems.map((i) => ({ id: i.id, text: i.text })))}`;
   };
 
   const confirmSend = async (): Promise<void> => {
+    const slackListWebhook = currentUser?.slack_list_webhook;
+    const slackSummaryWebhook = currentUser?.slack_summary_webhook;
+
+    if (!slackListWebhook || !slackSummaryWebhook) {
+      setEnrichmentError("Slack webhooks are not configured for this user.");
+      setEnrichmentStatus("error");
+      return;
+    }
+
     setEnrichmentStatus("sending");
 
     const grouped = enrichedItems.reduce<Record<string, EnrichedItem[]>>(
@@ -288,7 +299,7 @@ ${JSON.stringify(workingItems.map((i) => ({ id: i.id, text: i.text })))}`;
       const dailyResponse = await fetch("/api/slack", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ target: "daily", blocks: dailyBlocks }),
+        body: JSON.stringify({ webhookUrl: slackSummaryWebhook, blocks: dailyBlocks }),
       });
 
       if (!dailyResponse.ok) {
@@ -298,7 +309,7 @@ ${JSON.stringify(workingItems.map((i) => ({ id: i.id, text: i.text })))}`;
       const devResponse = await fetch("/api/slack", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ target: "dev", blocks: devBlocks }),
+        body: JSON.stringify({ webhookUrl: slackListWebhook, blocks: devBlocks }),
       });
 
       if (!devResponse.ok) {

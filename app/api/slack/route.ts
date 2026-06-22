@@ -4,24 +4,20 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest) {
   const body = await req.json();
 
-  const target: string = body.target ?? "dev";
-  const webhookUrl =
-    target === "daily"
-      ? process.env.SLACK_WEBHOOK_DAILY
-      : process.env.SLACK_WEBHOOK_BASERATE_DEV;
+  const webhookUrl: unknown = body.webhookUrl;
+  const blocks: unknown = body.blocks;
 
-  if (!webhookUrl) {
-    const which = target === "daily" ? "SLACK_WEBHOOK_DAILY" : "SLACK_WEBHOOK_BASERATE_DEV";
+  if (!webhookUrl || typeof webhookUrl !== "string") {
     return NextResponse.json(
-      { error: `Webhook URL not configured (${which})` },
-      { status: 500 },
+      { error: "Missing or invalid webhookUrl in request body" },
+      { status: 400 },
     );
   }
 
   const slackResponse = await fetch(webhookUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    body: JSON.stringify({ blocks }),
   });
 
   const text = await slackResponse.text();

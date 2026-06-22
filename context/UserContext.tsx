@@ -16,6 +16,8 @@ interface User {
   name: string;
   habitica_user_id: string;
   habitica_api_token: string;
+  slack_list_webhook: string | null;
+  slack_summary_webhook: string | null;
 }
 
 interface UserContextValue {

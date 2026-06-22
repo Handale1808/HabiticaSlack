@@ -10,10 +10,12 @@ interface User {
   name: string
   habitica_user_id: string
   habitica_api_token: string
+  slack_list_webhook: string | null
+  slack_summary_webhook: string | null
 }
 
 interface UseLoginReturn {
-  createUser: (name: string, habiticaUserId: string, habiticaApiToken: string) => Promise<User | null>
+  createUser: (name: string, habiticaUserId: string, habiticaApiToken: string, slackListWebhook: string, slackSummaryWebhook: string) => Promise<User | null>
   updateUserCredentials: (id: string, habiticaUserId: string, habiticaApiToken: string) => Promise<User | null>
   existingUsers: User[]
   isLoading: boolean
@@ -33,7 +35,7 @@ export function useLogin(): UseLoginReturn {
     const fetchUsers = async () => {
       const { data, error } = await supabase
         .from('Users')
-        .select('id, name, habitica_user_id, habitica_api_token')
+        .select('id, name, habitica_user_id, habitica_api_token, slack_list_webhook, slack_summary_webhook')
         .order('created_at', { ascending: false })
 
       if (error) {
@@ -51,14 +53,16 @@ export function useLogin(): UseLoginReturn {
     name: string,
     habiticaUserId: string,
     habiticaApiToken: string,
+    slackListWebhook: string,
+    slackSummaryWebhook: string,
   ): Promise<User | null> => {
     setIsLoading(true)
     setError(null)
 
     const { data, error } = await supabase
       .from('Users')
-      .insert({ name, habitica_user_id: habiticaUserId, habitica_api_token: habiticaApiToken })
-      .select('id, name, habitica_user_id, habitica_api_token')
+      .insert({ name, habitica_user_id: habiticaUserId, habitica_api_token: habiticaApiToken, slack_list_webhook: slackListWebhook, slack_summary_webhook: slackSummaryWebhook })
+      .select('id, name, habitica_user_id, habitica_api_token, slack_list_webhook, slack_summary_webhook')
       .single()
 
     setIsLoading(false)
@@ -83,7 +87,7 @@ export function useLogin(): UseLoginReturn {
       .from('Users')
       .update({ habitica_user_id: habiticaUserId, habitica_api_token: habiticaApiToken })
       .eq('id', id)
-      .select('id, name, habitica_user_id, habitica_api_token')
+      .select('id, name, habitica_user_id, habitica_api_token, slack_list_webhook, slack_summary_webhook')
       .single()
 
     setUpdateLoading(false)
