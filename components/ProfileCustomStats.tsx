@@ -23,7 +23,7 @@ export function ProfileCustomStats({
     <Card className="w-full max-w-sm flex flex-col gap-3">
       <span className="text-xs uppercase tracking-widest text-bark/50">your stats</span>
       <div className="flex items-center gap-4">
-        <span className="text-xs font-semibold text-parchment">lv {level}</span>
+        <span className="text-xs text-bark font-semibold">lv {level}</span>
         <AcornCount acorns={acorns} />
       </div>
       <CustomStatBars

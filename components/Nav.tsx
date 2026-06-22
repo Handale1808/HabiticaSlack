@@ -8,8 +8,7 @@ import { useUser } from "@/context/UserContext";
 import { supabase } from "@/lib/supabaseClient";
 import { LinkButton } from "@/components/ui/LinkButton";
 import { SpriteNineSlice } from "@/components/ui/SpriteNineSlice";
-import { AcornCount } from "@/components/AcornCount";
-import { CustomStatBars } from "@/components/CustomStatBars";
+import { StatHud } from "@/components/StatHud";
 
 export function Nav() {
   const pathname = usePathname();
@@ -61,9 +60,9 @@ export function Nav() {
           </ul>
           <div className="flex items-center gap-4">
             {userStats && (
-              <div className="flex items-center gap-3 text-parchment">
-                <AcornCount acorns={userStats.acorns} />
-                <CustomStatBars
+              <div style={{ marginLeft: 15 }}>
+                <StatHud
+                  acorns={userStats.acorns}
                   wonder={userStats.wonder}
                   maxWonder={userStats.maxWonder}
                   magic={userStats.magic}
