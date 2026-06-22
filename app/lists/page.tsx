@@ -233,6 +233,7 @@ export default function ListsPage() {
               blockedText={blockedText}
               availableCategories={availableCategories}
               enrichmentError={enrichmentError}
+              showSlack={!!(currentUser?.slack_list_webhook || currentUser?.slack_summary_webhook)}
               onOpen={() => router.push(`/lists/${list.id}`)}
               onSlackClick={() => handleSlackClick(list.id)}
               onDelete={() => handleDeleteList(list.id)}

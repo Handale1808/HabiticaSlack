@@ -4,203 +4,172 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useLogin } from "@/hooks/useLogin";
-import { useUser } from "@/context/UserContext";
+import { supabase } from "@/lib/supabaseClient";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { FieldLabel } from "@/components/ui/FieldLabel";
 
+type Mode = "signin" | "signup";
+
 export default function LoginPage() {
-  const [nameInput, setNameInput] = useState("");
-  const [habiticaUserIdInput, setHabiticaUserIdInput] = useState("");
-  const [habiticaApiTokenInput, setHabiticaApiTokenInput] = useState("");
-  const [slackListWebhookInput, setSlackListWebhookInput] = useState("");
-  const [slackSummaryWebhookInput, setSlackSummaryWebhookInput] = useState("");
-
-  const [credentialPromptUserId, setCredentialPromptUserId] = useState<
-    string | null
-  >(null);
-  const [promptHabiticaUserId, setPromptHabiticaUserId] = useState("");
-  const [promptHabiticaApiToken, setPromptHabiticaApiToken] = useState("");
-
-  const {
-    createUser,
-    updateUserCredentials,
-    existingUsers,
-    isLoading,
-    error,
-    updateLoading,
-    updateError,
-  } = useLogin();
-  const { setCurrentUser } = useUser();
   const router = useRouter();
+  const [mode, setMode] = useState<Mode>("signin");
 
-  const handleCreate = async () => {
-    if (
-      !nameInput.trim() ||
-      !habiticaUserIdInput.trim() ||
-      !habiticaApiTokenInput.trim()
-    )
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [emailSent, setEmailSent] = useState(false);
+
+  const handleSignIn = async () => {
+    setError(null);
+    setIsLoading(true);
+
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+
+    setIsLoading(false);
+
+    if (signInError) {
+      setError(signInError.message.toLowerCase());
       return;
-    const user = await createUser(
-      nameInput.trim(),
-      habiticaUserIdInput.trim(),
-      habiticaApiTokenInput.trim(),
-      slackListWebhookInput.trim(),
-      slackSummaryWebhookInput.trim(),
-    );
-    if (user) {
-      setCurrentUser(user);
-      router.push("/upload");
     }
+
+    router.push("/upload");
   };
 
-  const handleSelectUser = (user: {
-    id: string;
-    name: string;
-    habitica_user_id: string;
-    habitica_api_token: string;
-    slack_list_webhook: string | null;
-    slack_summary_webhook: string | null;
-  }) => {
-    if (user.habitica_user_id && user.habitica_api_token) {
-      setCurrentUser(user);
-      router.push("/upload");
-    } else {
-      setCredentialPromptUserId(user.id);
+  const handleSignUp = async () => {
+    setError(null);
+
+    if (password !== confirmPassword) {
+      setError("passwords do not match");
+      return;
     }
+
+    setIsLoading(true);
+
+    const { data, error: signUpError } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+    });
+
+    setIsLoading(false);
+
+    if (signUpError) {
+      setError(signUpError.message.toLowerCase());
+      return;
+    }
+
+    if (!data.session) {
+      setEmailSent(true);
+      return;
+    }
+
+    router.push("/profile");
   };
 
-  const handleCredentialSubmit = async (userId: string) => {
-    if (!promptHabiticaUserId.trim() || !promptHabiticaApiToken.trim()) return;
-    const updated = await updateUserCredentials(
-      userId,
-      promptHabiticaUserId.trim(),
-      promptHabiticaApiToken.trim(),
-    );
-    if (updated) {
-      setCurrentUser(updated);
-      router.push("/upload");
-    }
+  const switchMode = (next: Mode) => {
+    setMode(next);
+    setError(null);
+    setEmailSent(false);
+    setEmail("");
+    setPassword("");
+    setConfirmPassword("");
   };
+
+  if (emailSent) {
+    return (
+      <main className="min-h-screen flex flex-col items-center justify-center gap-8 p-8">
+        <Card className="flex w-full max-w-sm flex-col gap-3">
+          <h2 className="font-display text-2xl text-bark">check your inbox</h2>
+          <p className="text-sm text-bark/60">
+            we sent a confirmation link to <strong>{email}</strong>. click it to
+            activate your account, then come back here to sign in.
+          </p>
+          <Button variant="secondary" onClick={() => switchMode("signin")}>
+            back to sign in
+          </Button>
+        </Card>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center gap-8 p-8">
-      <h1 className="font-display text-4xl text-bark">Who are you?</h1>
+      <h1 className="font-display text-4xl text-bark">
+        {mode === "signin" ? "welcome back" : "create account"}
+      </h1>
 
       <Card className="flex w-full max-w-sm flex-col gap-3">
-        <FieldLabel label="Your name">
+        <FieldLabel label="email">
           <input
-            type="text"
-            value={nameInput}
-            onChange={(e) => setNameInput(e.target.value)}
-            placeholder="Your name"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
             className="w-full rounded-lg border-2 border-bark/30 bg-parchment px-3 py-2 text-sm text-bark shadow-sm transition-colors placeholder:text-bark/40 focus:outline-none focus:ring-2 focus:ring-moss"
           />
         </FieldLabel>
-        <FieldLabel label="Habitica user ID">
-          <input
-            type="text"
-            value={habiticaUserIdInput}
-            onChange={(e) => setHabiticaUserIdInput(e.target.value)}
-            placeholder="Habitica User ID"
-            className="w-full rounded-lg border-2 border-bark/30 bg-parchment px-3 py-2 text-sm text-bark shadow-sm transition-colors placeholder:text-bark/40 focus:outline-none focus:ring-2 focus:ring-moss"
-          />
-        </FieldLabel>
-        <FieldLabel label="Habitica API token">
+
+        <FieldLabel label="password">
           <input
             type="password"
-            value={habiticaApiTokenInput}
-            onChange={(e) => setHabiticaApiTokenInput(e.target.value)}
-            placeholder="Habitica API Token"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="password"
             className="w-full rounded-lg border-2 border-bark/30 bg-parchment px-3 py-2 text-sm text-bark shadow-sm transition-colors placeholder:text-bark/40 focus:outline-none focus:ring-2 focus:ring-moss"
           />
         </FieldLabel>
-        <FieldLabel label="Slack list webhook">
-          <input
-            type="text"
-            value={slackListWebhookInput}
-            onChange={(e) => setSlackListWebhookInput(e.target.value)}
-            placeholder="https://hooks.slack.com/..."
-            className="w-full rounded-lg border-2 border-bark/30 bg-parchment px-3 py-2 text-sm text-bark shadow-sm transition-colors placeholder:text-bark/40 focus:outline-none focus:ring-2 focus:ring-moss"
-          />
-        </FieldLabel>
-        <FieldLabel label="Slack summary webhook">
-          <input
-            type="text"
-            value={slackSummaryWebhookInput}
-            onChange={(e) => setSlackSummaryWebhookInput(e.target.value)}
-            placeholder="https://hooks.slack.com/..."
-            className="w-full rounded-lg border-2 border-bark/30 bg-parchment px-3 py-2 text-sm text-bark shadow-sm transition-colors placeholder:text-bark/40 focus:outline-none focus:ring-2 focus:ring-moss"
-          />
-        </FieldLabel>
+
+        {mode === "signup" && (
+          <FieldLabel label="confirm password">
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="confirm password"
+              className="w-full rounded-lg border-2 border-bark/30 bg-parchment px-3 py-2 text-sm text-bark shadow-sm transition-colors placeholder:text-bark/40 focus:outline-none focus:ring-2 focus:ring-moss"
+            />
+          </FieldLabel>
+        )}
+
         <Button
-          onClick={handleCreate}
-          disabled={
-            !nameInput.trim() ||
-            !habiticaUserIdInput.trim() ||
-            !habiticaApiTokenInput.trim() ||
-            !slackListWebhookInput.trim() ||
-            !slackSummaryWebhookInput.trim()
-          }
+          onClick={mode === "signin" ? handleSignIn : handleSignUp}
+          disabled={!email.trim() || !password}
           isLoading={isLoading}
         >
-          create and login
+          {mode === "signin" ? "sign in" : "create account"}
         </Button>
-        {error && <p className="text-sm text-berry">{error.toLowerCase()}</p>}
+
+        {error && <p className="text-sm text-berry">{error}</p>}
       </Card>
 
-      {existingUsers.length > 0 && (
-        <div className="flex w-full max-w-sm flex-col gap-2">
-          <p className="text-sm text-bark/60">or continue as:</p>
-          {existingUsers.map((user) => (
-            <div key={user.id} className="flex flex-col gap-2">
-              <Button
-                variant="secondary"
-                onClick={() => handleSelectUser(user)}
-              >
-                {user.name}
-              </Button>
-
-              {credentialPromptUserId === user.id && (
-                <Card className="flex flex-col gap-2 border-l-4 border-l-moss">
-                  <p className="text-xs text-bark/60">
-                    enter habitica credentials for {user.name}:
-                  </p>
-                  <input
-                    type="text"
-                    value={promptHabiticaUserId}
-                    onChange={(e) => setPromptHabiticaUserId(e.target.value)}
-                    placeholder="habitica user id"
-                    className="w-full rounded-lg border-2 border-bark/30 bg-parchment px-3 py-2 text-sm text-bark shadow-sm transition-colors placeholder:text-bark/40 focus:outline-none focus:ring-2 focus:ring-moss"
-                  />
-                  <input
-                    type="password"
-                    value={promptHabiticaApiToken}
-                    onChange={(e) => setPromptHabiticaApiToken(e.target.value)}
-                    placeholder="habitica api token"
-                    className="w-full rounded-lg border-2 border-bark/30 bg-parchment px-3 py-2 text-sm text-bark shadow-sm transition-colors placeholder:text-bark/40 focus:outline-none focus:ring-2 focus:ring-moss"
-                  />
-                  <Button
-                    variant="secondary"
-                    onClick={() => handleCredentialSubmit(user.id)}
-                    disabled={
-                      !promptHabiticaUserId.trim() ||
-                      !promptHabiticaApiToken.trim()
-                    }
-                    isLoading={updateLoading}
-                  >
-                    save and login
-                  </Button>
-                  {updateError && (
-                    <p className="text-xs text-berry">{updateError.toLowerCase()}</p>
-                  )}
-                </Card>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
+      <p className="text-sm text-bark/60">
+        {mode === "signin" ? (
+          <>
+            no account yet?{" "}
+            <button
+              className="underline hover:text-bark"
+              onClick={() => switchMode("signup")}
+            >
+              create one
+            </button>
+          </>
+        ) : (
+          <>
+            already have an account?{" "}
+            <button
+              className="underline hover:text-bark"
+              onClick={() => switchMode("signin")}
+            >
+              sign in
+            </button>
+          </>
+        )}
+      </p>
     </main>
   );
 }

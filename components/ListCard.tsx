@@ -27,6 +27,7 @@ interface ListCardProps {
   blockedText: string | null;
   availableCategories: string[];
   enrichmentError: string | null;
+  showSlack: boolean;
   onOpen: () => void;
   onSlackClick: () => void;
   onDelete?: () => void;
@@ -52,6 +53,7 @@ export function ListCard({
   blockedText,
   availableCategories,
   enrichmentError,
+  showSlack,
   onOpen,
   onSlackClick,
   onDelete,
@@ -118,37 +120,39 @@ export function ListCard({
           />
         </div>
 
-        {list.slack_sent ? (
-          <Button variant="shiny">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-3.5 w-3.5"
-              aria-hidden="true"
+        {showSlack && (
+          list.slack_sent ? (
+            <Button variant="shiny">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-3.5 w-3.5"
+                aria-hidden="true"
+              >
+                <path d="M5 13l4 4L19 7" />
+              </svg>
+              sent
+            </Button>
+          ) : (
+            <Button
+              variant="secondary"
+              onClick={onSlackClick}
+              disabled={
+                slackItemsLoading ||
+                (isActive &&
+                  (enrichmentStatus === "loading" ||
+                    enrichmentStatus === "sending" ||
+                    enrichmentStatus === "success"))
+              }
+              isLoading={isActive && enrichmentStatus === "loading"}
             >
-              <path d="M5 13l4 4L19 7" />
-            </svg>
-            sent
-          </Button>
-        ) : (
-          <Button
-            variant="secondary"
-            onClick={onSlackClick}
-            disabled={
-              slackItemsLoading ||
-              (isActive &&
-                (enrichmentStatus === "loading" ||
-                  enrichmentStatus === "sending" ||
-                  enrichmentStatus === "success"))
-            }
-            isLoading={isActive && enrichmentStatus === "loading"}
-          >
-            {isActive && enrichmentStatus === "loading" ? "preparing..." : "send to slack"}
-          </Button>
+              {isActive && enrichmentStatus === "loading" ? "preparing..." : "send to slack"}
+            </Button>
+          )
         )}
       </div>
 

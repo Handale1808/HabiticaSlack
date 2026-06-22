@@ -22,7 +22,7 @@ import { DecorativeAsset } from "@/components/decorative/DecorativeAsset";
 export default function UploadPage() {
   const { upload, reset, status, doneItems, listId, errorMessage } =
     useUpload();
-  const { currentUser, isRehydrating } = useUser();
+  const { currentUser, authUser, isRehydrating } = useUser();
   const router = useRouter();
   const [selectedDate, setSelectedDate] = useState<Date | null>(
     () => new Date(),
@@ -80,10 +80,10 @@ export default function UploadPage() {
   } = useSlackSend(listId ?? "", items);
 
   useEffect(() => {
-    if (!isRehydrating && !currentUser) {
-      router.push("/login");
-    }
-  }, [currentUser, isRehydrating, router]);
+    if (isRehydrating) return;
+    if (!authUser) return; // middleware handles this; guard against brief client gap
+    if (!currentUser) router.push("/profile");
+  }, [currentUser, authUser, isRehydrating, router]);
 
   if (isRehydrating) return null;
   if (!currentUser) return null;
@@ -191,30 +191,32 @@ export default function UploadPage() {
 
             <SendAllButton items={items} sendItem={sendItem} />
 
-            <SlackSendBlock
-              enrichmentStatus={enrichmentStatus}
-              enrichedItems={enrichedItems}
-              done={done}
-              nextText={nextText}
-              blockedText={blockedText}
-              availableCategories={availableCategories}
-              onCategoryChange={handleCategoryChange}
-              onDoneChange={handleDoneChange}
-              onNextTextChange={handleNextTextChange}
-              onBlockedTextChange={handleBlockedTextChange}
-              doneAdditions={doneAdditions}
-              next={next}
-              blocked={blocked}
-              onDoneAdditionsChange={handleDoneAdditionsChange}
-              onNextChange={handleNextChange}
-              onBlockedChange={handleBlockedChange}
-              onStartCollecting={startCollecting}
-              onTrigger={triggerEnrichment}
-              onConfirm={confirmSend}
-              onCancel={cancelPreview}
-              sendError={enrichmentError}
-              disabled={!listId}
-            />
+            {(currentUser.slack_list_webhook || currentUser.slack_summary_webhook) && (
+              <SlackSendBlock
+                enrichmentStatus={enrichmentStatus}
+                enrichedItems={enrichedItems}
+                done={done}
+                nextText={nextText}
+                blockedText={blockedText}
+                availableCategories={availableCategories}
+                onCategoryChange={handleCategoryChange}
+                onDoneChange={handleDoneChange}
+                onNextTextChange={handleNextTextChange}
+                onBlockedTextChange={handleBlockedTextChange}
+                doneAdditions={doneAdditions}
+                next={next}
+                blocked={blocked}
+                onDoneAdditionsChange={handleDoneAdditionsChange}
+                onNextChange={handleNextChange}
+                onBlockedChange={handleBlockedChange}
+                onStartCollecting={startCollecting}
+                onTrigger={triggerEnrichment}
+                onConfirm={confirmSend}
+                onCancel={cancelPreview}
+                sendError={enrichmentError}
+                disabled={!listId}
+              />
+            )}
           </motion.div>
         )}
       </AnimatePresence>

@@ -1,5 +1,3 @@
-// context/UserContext.tsx
-
 "use client";
 
 import {
@@ -9,6 +7,8 @@ import {
   useEffect,
   useCallback,
 } from "react";
+import type { User as AuthUser } from "@supabase/supabase-js";
+import { supabase } from "@/lib/supabaseClient";
 import { useHabiticaStats } from "@/hooks/useHabiticaStats";
 
 interface User {
@@ -23,6 +23,7 @@ interface User {
 interface UserContextValue {
   currentUser: User | null;
   setCurrentUser: (user: User) => void;
+  authUser: AuthUser | null;
   isRehydrating: boolean;
   habiticaStats: ReturnType<typeof useHabiticaStats>["stats"];
   isHabiticaStatsLoading: boolean;
@@ -32,10 +33,20 @@ interface UserContextValue {
 
 const UserContext = createContext<UserContextValue | null>(null);
 
-const STORAGE_KEY = "current_user";
+async function fetchProfileRow(authUid: string): Promise<User | null> {
+  const { data } = await supabase
+    .from("Users")
+    .select(
+      "id, name, habitica_user_id, habitica_api_token, slack_list_webhook, slack_summary_webhook",
+    )
+    .eq("user_id", authUid)
+    .single();
+  return data ?? null;
+}
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUserState] = useState<User | null>(null);
+  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
   const [isRehydrating, setIsRehydrating] = useState(true);
 
   const {
@@ -49,36 +60,45 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   );
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (
-          typeof parsed.id === "string" &&
-          parsed.id &&
-          typeof parsed.name === "string" &&
-          parsed.name &&
-          typeof parsed.habitica_user_id === "string" &&
-          parsed.habitica_user_id &&
-          typeof parsed.habitica_api_token === "string" &&
-          parsed.habitica_api_token
-        ) {
-          setCurrentUserState(parsed);
-        }
+    let mounted = true;
+
+    const init = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (session?.user && mounted) {
+        setAuthUser(session.user);
+        const profile = await fetchProfileRow(session.user.id);
+        if (mounted) setCurrentUserState(profile);
       }
-    } catch {
-      // invalid or missing storage value — proceed as logged out
-    } finally {
-      setIsRehydrating(false);
-    }
+
+      if (mounted) setIsRehydrating(false);
+    };
+
+    init();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (!mounted) return;
+
+        if (event === "SIGNED_OUT" || !session) {
+          setAuthUser(null);
+          setCurrentUserState(null);
+          return;
+        }
+
+        setAuthUser(session.user);
+        const profile = await fetchProfileRow(session.user.id);
+        if (mounted) setCurrentUserState(profile);
+      },
+    );
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const setCurrentUser = useCallback((user: User) => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
-    } catch {
-      // storage write failed — session will not persist
-    }
     setCurrentUserState(user);
   }, []);
 
@@ -87,6 +107,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       value={{
         currentUser,
         setCurrentUser,
+        authUser,
         isRehydrating,
         habiticaStats,
         isHabiticaStatsLoading,
