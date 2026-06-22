@@ -22,7 +22,7 @@ jobs:
         run: npm ci
 
       - name: Run daily points award
-        run: node scripts/award-daily-points.js
+        run: npx tsx scripts/award-daily-points.ts
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}

@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { FieldLabel } from "@/components/ui/FieldLabel";
 import { AvatarUpload } from "@/components/AvatarUpload";
+import Link from "next/link";
 import { ProfileHabiticaStats } from "@/components/ProfileHabiticaStats";
 import { ProfileCustomStats } from "@/components/ProfileCustomStats";
 
@@ -231,6 +232,15 @@ export default function ProfilePage() {
           magic={userStats.magic}
           maxMagic={userStats.maxMagic}
         />
+      )}
+
+      {currentUser && (
+        <Link
+          href="/profile/points-history"
+          className="text-sm text-bark/60 hover:text-bark transition-colors underline underline-offset-4"
+        >
+          view points history
+        </Link>
       )}
     </main>
   );

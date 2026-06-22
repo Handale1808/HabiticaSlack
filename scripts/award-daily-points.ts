@@ -1,7 +1,7 @@
-// @ts-check
-require("dotenv").config({ path: ".env.local" });
-const { createClient } = require("@supabase/supabase-js");
-const WIN_CONDITIONS = require("./win-conditions.js");
+import dotenv from "dotenv";
+dotenv.config({ path: ".env.local" });
+import { createClient } from "@supabase/supabase-js";
+import WIN_CONDITIONS from "./win-conditions.ts";
 
 const NEXT_PUBLIC_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const NEXT_PUBLIC_SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -18,12 +18,29 @@ const supabase = createClient(NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANO
 
 const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
 
-function stripMarkdownFences(text) {
+interface AiAward {
+  name: string;
+  amount: number;
+}
+
+interface ValidatedAward {
+  user_id: string;
+  stat_type: string;
+  amount: number;
+  reason: string;
+  conditionName: string;
+}
+
+interface ActivitySummary {
+  items: { text: string; category: string | null }[];
+  categories: string[];
+}
+
+function stripMarkdownFences(text: string): string {
   return text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
 }
 
-async function findActiveUserIds() {
-  // Get user IDs from DoneItems created today via DoneItems -> Lists -> Uploads
+async function findActiveUserIds(): Promise<string[]> {
   const { data: doneItemLists, error: doneErr } = await supabase
     .from("DoneItems")
     .select("list_id")
@@ -37,7 +54,7 @@ async function findActiveUserIds() {
 
   const listIds = [...new Set((doneItemLists || []).map((r) => r.list_id))];
 
-  let userIdsFromDoneItems = [];
+  let userIdsFromDoneItems: string[] = [];
   if (listIds.length > 0) {
     const { data: lists, error: listsErr } = await supabase
       .from("Lists")
@@ -63,13 +80,12 @@ async function findActiveUserIds() {
     }
   }
 
-  // Also get user IDs from Lists completed today
   const { data: completedLists, error: completedErr } = await supabase
     .from("Lists")
     .select("upload_id")
     .eq("completed_at", today);
 
-  let userIdsFromLists = [];
+  let userIdsFromLists: string[] = [];
   if (completedErr) {
     console.error("Error querying Lists completed today:", completedErr.message);
   } else {
@@ -91,7 +107,7 @@ async function findActiveUserIds() {
   return [...new Set([...userIdsFromDoneItems, ...userIdsFromLists])];
 }
 
-async function isAlreadyAwarded(userId) {
+async function isAlreadyAwarded(userId: string): Promise<boolean> {
   const { data, error } = await supabase
     .from("StatLedger")
     .select("id")
@@ -103,15 +119,11 @@ async function isAlreadyAwarded(userId) {
     console.error(`Error checking idempotency for user ${userId}:`, error.message);
     return false;
   }
-  return data && data.length > 0;
+  return data != null && data.length > 0;
 }
 
-async function fetchUserActivity(userId) {
-  // Get all Lists for this user completed today or created today via Uploads
-  const { data: uploads } = await supabase
-    .from("Uploads")
-    .select("id")
-    .eq("user_id", userId);
+async function fetchUserActivity(userId: string): Promise<ActivitySummary> {
+  const { data: uploads } = await supabase.from("Uploads").select("id").eq("user_id", userId);
 
   const uploadIds = (uploads || []).map((u) => u.id);
   if (uploadIds.length === 0) return { items: [], categories: [] };
@@ -136,13 +148,16 @@ async function fetchUserActivity(userId) {
     return { items: [], categories: [] };
   }
 
-  const items = (doneItems || []).map((i) => ({ text: i.text, category: i.category || null }));
-  const categories = [...new Set(items.map((i) => i.category).filter(Boolean))];
+  const items = (doneItems || []).map((i) => ({ text: i.text, category: i.category ?? null }));
+  const categories = [...new Set(items.map((i) => i.category).filter((c): c is string => c != null))];
 
   return { items, categories };
 }
 
-async function callOpenRouter(activitySummary, conditionsForPrompt) {
+async function callOpenRouter(
+  activitySummary: ActivitySummary,
+  conditionsForPrompt: { name: string; description: string }[]
+): Promise<string> {
   const systemMessage = `You are evaluating a user's daily task activity against a list of win conditions.
 Return ONLY a valid JSON array of the conditions that were met. Each element must have exactly two fields:
 - "name": the exact condition name from the provided list (do not invent new names)
@@ -187,8 +202,7 @@ Return only the conditions that were met as a JSON array with "name" and "amount
   return data.choices[0].message.content;
 }
 
-/** @param {string} appUserId */
-async function resolveAuthUserId(appUserId) {
+async function resolveAuthUserId(appUserId: string): Promise<string | null> {
   const { data, error } = await supabase.rpc("get_auth_user_id", { app_user_id: appUserId });
 
   if (error) {
@@ -202,7 +216,7 @@ async function resolveAuthUserId(appUserId) {
   return data;
 }
 
-async function processUser(userId) {
+async function processUser(userId: string) {
   const activity = await fetchUserActivity(userId);
 
   if (activity.items.length === 0) {
@@ -215,26 +229,26 @@ async function processUser(userId) {
     description: c.description,
   }));
 
-  let rawContent;
+  let rawContent: string;
   try {
     rawContent = await callOpenRouter(activity, conditionsForPrompt);
   } catch (err) {
-    console.error(`User ${userId}: OpenRouter call failed — ${err.message}`);
+    console.error(`User ${userId}: OpenRouter call failed — ${(err as Error).message}`);
     return null;
   }
 
-  let aiAwards;
+  let aiAwards: AiAward[];
   try {
     const cleaned = stripMarkdownFences(rawContent);
     aiAwards = JSON.parse(cleaned);
     if (!Array.isArray(aiAwards)) throw new Error("Response is not an array");
   } catch (err) {
-    console.error(`User ${userId}: Failed to parse AI response — ${err.message}`);
-    console.error("Raw content was:", rawContent);
+    console.error(`User ${userId}: Failed to parse AI response — ${(err as Error).message}`);
+    console.error("Raw content was:", rawContent!);
     return null;
   }
 
-  const validatedAwards = [];
+  const validatedAwards: ValidatedAward[] = [];
   for (const award of aiAwards) {
     const condition = WIN_CONDITIONS.find((c) => c.name === award.name);
     if (!condition) {
@@ -256,7 +270,7 @@ async function processUser(userId) {
 
   if (validatedAwards.length === 0) {
     console.log(`User ${userId}: no conditions met today.`);
-    return { awarded: [] };
+    return { awarded: [] as ValidatedAward[] };
   }
 
   const authUserId = await resolveAuthUserId(userId);
@@ -273,7 +287,6 @@ async function processUser(userId) {
     return null;
   }
 
-  // Update UserStats
   const { data: statsRow, error: statsErr } = await supabase
     .from("UserStats")
     .select("user_id, acorns, wonder, magic")
@@ -285,9 +298,9 @@ async function processUser(userId) {
     return { awarded: validatedAwards };
   }
 
-  const totals = { acorns: 0, wonder: 0, magic: 0 };
+  const totals: Record<string, number> = { acorns: 0, wonder: 0, magic: 0 };
   for (const award of validatedAwards) {
-    totals[award.stat_type] = (totals[award.stat_type] || 0) + award.amount;
+    totals[award.stat_type] = (totals[award.stat_type] ?? 0) + award.amount;
   }
 
   if (!statsRow) {
@@ -302,7 +315,7 @@ async function processUser(userId) {
       console.error(`User ${userId}: Failed to insert UserStats — ${insertStatsErr.message}`);
     }
   } else {
-    const updates = {};
+    const updates: Record<string, number> = {};
     if (totals.acorns) updates.acorns = statsRow.acorns + totals.acorns;
     if (totals.wonder) updates.wonder = statsRow.wonder + totals.wonder;
     if (totals.magic) updates.magic = statsRow.magic + totals.magic;
@@ -371,12 +384,14 @@ async function main() {
       .filter((a) => a.stat_type === "acorns")
       .reduce((sum, a) => sum + a.amount, 0);
 
-    const parts = [];
+    const parts: string[] = [];
     if (wonderTotal) parts.push(`wonder +${wonderTotal}`);
     if (magicTotal) parts.push(`magic +${magicTotal}`);
     if (acornsTotal) parts.push(`acorns +${acornsTotal}`);
 
-    const conditionNames = result.awarded.map((a) => a.conditionName || a.reason.split(":")[2]).join(", ");
+    const conditionNames = result.awarded
+      .map((a) => a.conditionName || a.reason.split(":")[2])
+      .join(", ");
     console.log(
       `User ${userId}: awarded ${result.awarded.length} condition(s) [${conditionNames}] — ${parts.join(", ")}`
     );
