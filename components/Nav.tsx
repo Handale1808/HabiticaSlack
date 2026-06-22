@@ -24,8 +24,9 @@ export function Nav() {
     !!currentUser?.habitica_user_id && !!currentUser?.habitica_api_token;
 
   return (
+    <div className="px-6 pt-4">
     <SpriteNineSlice sheetKey="medival" spriteId={20}>
-      <nav className="w-full bg-blend-multiply border-b border-bark-light/40 px-8 py-4 flex justify-between items-center shadow-sm">
+      <nav className="bg-blend-multiply px-8 py-4 flex justify-between items-center shadow-sm">
         {" "}
         <ul className="flex gap-6">
           {navItems.map((item) => {
@@ -69,5 +70,6 @@ export function Nav() {
         )}
       </nav>
     </SpriteNineSlice>
+    </div>
   );
 }
