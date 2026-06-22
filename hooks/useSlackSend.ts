@@ -23,8 +23,9 @@ export interface EnrichedItem {
   slack_text: string;
 }
 
-type EnrichmentStatus =
+export type EnrichmentStatus =
   | "idle"
+  | "collecting"
   | "loading"
   | "preview"
   | "sending"
@@ -32,11 +33,23 @@ type EnrichmentStatus =
   | "error";
 
 interface UseSlackSendReturn {
-triggerEnrichment: (itemsOverride?: DoneItem[], listIdOverride?: string) => Promise<void>;
+  triggerEnrichment: (itemsOverride?: DoneItem[], listIdOverride?: string) => Promise<void>;
+  startCollecting: () => void;
   enrichedItems: EnrichedItem[];
-  summary: string | null;
+  done: string | null;
+  nextText: string | null;
+  blockedText: string | null;
   availableCategories: string[];
   handleCategoryChange: (id: string, category: string) => void;
+  handleDoneChange: (value: string) => void;
+  handleNextTextChange: (value: string) => void;
+  handleBlockedTextChange: (value: string) => void;
+  doneAdditions: string;
+  next: string;
+  blocked: string;
+  handleDoneAdditionsChange: (value: string) => void;
+  handleNextChange: (value: string) => void;
+  handleBlockedChange: (value: string) => void;
   confirmSend: () => Promise<void>;
   cancelPreview: () => void;
   enrichmentStatus: EnrichmentStatus;
@@ -52,65 +65,36 @@ export function useSlackSend(
   items: DoneItem[],
 ): UseSlackSendReturn {
   const [enrichedItems, setEnrichedItems] = useState<EnrichedItem[]>([]);
-  const [summary, setSummary] = useState<string | null>(null);
+  const [done, setDone] = useState<string | null>(null);
+  const [nextText, setNextText] = useState<string | null>(null);
+  const [blockedText, setBlockedText] = useState<string | null>(null);
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [enrichmentStatus, setEnrichmentStatus] =
     useState<EnrichmentStatus>("idle");
   const [enrichmentError, setEnrichmentError] = useState<string | null>(null);
 
-const triggerEnrichment = async (
-  itemsOverride?: DoneItem[],
-  listIdOverride?: string,
-): Promise<void> => {
-  const workingListId = listIdOverride ?? listId;
+  const [doneAdditions, setDoneAdditions] = useState("");
+  const [next, setNext] = useState("");
+  const [blocked, setBlocked] = useState("");
+
+  const startCollecting = (): void => {
+    setEnrichmentStatus("collecting");
+  };
+
+  const triggerEnrichment = async (
+    itemsOverride?: DoneItem[],
+    listIdOverride?: string,
+  ): Promise<void> => {
     const workingItems = Array.isArray(itemsOverride)
       ? itemsOverride
       : Array.isArray(items)
         ? items
         : [];
+    const workingListId = listIdOverride ?? listId;
     if (workingItems.length === 0) {
       setEnrichmentError("No items to send.");
       setEnrichmentStatus("error");
       return;
-    }
-
-    const allEnriched = workingItems.every(
-      (item) => item.slack_text && item.category,
-    );
-
-    if (allEnriched) {
-      const { data: summaryData } = await supabase
-        .from("Lists")
-        .select("summary")
-        .eq("id", workingListId)
-        .single();
-
-      if (summaryData?.summary) {
-        const { data: categoryRows } = await supabase
-          .from("DoneItems")
-          .select("category")
-          .not("category", "is", null);
-
-        const existingCategories: string[] = [
-          ...new Set(
-            (categoryRows ?? [])
-              .map((row: { category: string | null }) => row.category)
-              .filter((c): c is string => c !== null),
-          ),
-        ].sort();
-
-        setEnrichedItems(
-          workingItems.map((item) => ({
-            ...item,
-            category: item.category!,
-            slack_text: item.slack_text!,
-          })),
-        );
-        setSummary(summaryData.summary);
-        setAvailableCategories(existingCategories);
-        setEnrichmentStatus("preview");
-        return;
-      }
     }
 
     setEnrichmentStatus("loading");
@@ -147,15 +131,24 @@ Rules:
 - If existing categories from the list above are specific and meaningful, reuse them. Ignore any that are too broad.
 - You may create new specific categories when needed.
 - Rewrite each item's text as a natural full past-tense sentence (e.g. "Made an implementation plan for the integration feature").
-- Write a 3 to 4 sentence summary of everything accomplished across all items.
+- Write a "done" paragraph (3–4 sentences) synthesising everything accomplished. If the user provided additional done context, weave it in naturally.
+- Write a "next" paragraph (1–3 sentences) from the user's next input. If blank, write "Nothing next."
+- Write a "blocked" paragraph (1–3 sentences) from the user's blocked input. If blank, write "Nothing blocked."
 - Return only valid JSON with no markdown fences, no preamble, no explanation.
+
+User inputs:
+- Done additions: ${doneAdditions.trim() || "(none)"}
+- Next: ${next.trim() || "(none)"}
+- Blocked: ${blocked.trim() || "(none)"}
 
 JSON shape:
 {
   "items": [
     { "id": "uuid-here", "category": "Implementation Plans", "slack_text": "Made an implementation plan for the integration feature." }
   ],
-  "summary": "Today was productive across several areas..."
+  "done": "Today was productive across several areas...",
+  "next": "Nothing next.",
+  "blocked": "Nothing blocked."
 }
 
 Items to process:
@@ -188,7 +181,9 @@ ${JSON.stringify(workingItems.map((i) => ({ id: i.id, text: i.text })))}`;
 
       let parsed: {
         items: { id: string; category: string; slack_text: string }[];
-        summary: string;
+        done: string;
+        next: string;
+        blocked: string;
       };
       try {
         parsed = JSON.parse(cleaned);
@@ -196,9 +191,13 @@ ${JSON.stringify(workingItems.map((i) => ({ id: i.id, text: i.text })))}`;
         throw new Error("Failed to parse AI response as JSON");
       }
 
-      if (!Array.isArray(parsed.items) || typeof parsed.summary !== "string") {
+      if (!Array.isArray(parsed.items)) {
         throw new Error("AI response has unexpected shape");
       }
+
+      const doneVal = typeof parsed.done === "string" ? parsed.done : "";
+      const nextVal = typeof parsed.next === "string" ? parsed.next : "Nothing next.";
+      const blockedVal = typeof parsed.blocked === "string" ? parsed.blocked : "Nothing blocked.";
 
       const enriched: EnrichedItem[] = workingItems.map((item) => {
         const aiItem = parsed.items.find((p) => p.id === item.id);
@@ -211,7 +210,7 @@ ${JSON.stringify(workingItems.map((i) => ({ id: i.id, text: i.text })))}`;
 
       supabase
         .from("Lists")
-        .update({ summary: parsed.summary })
+        .update({ summary: doneVal })
         .eq("id", workingListId)
         .then(({ error }) => {
           if (error) console.error("Failed to save summary:", error.message);
@@ -222,7 +221,9 @@ ${JSON.stringify(workingItems.map((i) => ({ id: i.id, text: i.text })))}`;
       ].sort();
 
       setEnrichedItems(enriched);
-      setSummary(parsed.summary);
+      setDone(doneVal);
+      setNextText(nextVal);
+      setBlockedText(blockedVal);
       setAvailableCategories(newCategories);
       setEnrichmentStatus("preview");
     } catch (err) {
@@ -252,7 +253,17 @@ ${JSON.stringify(workingItems.map((i) => ({ id: i.id, text: i.text })))}`;
       {},
     );
 
-    const blocks: object[] = [
+    const dailyBlocks: object[] = [
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `*Done:* ${done ?? ""}\n\n*Next:* ${nextText ?? "Nothing next."}\n\n*Blocked:* ${blockedText ?? "Nothing blocked."}`,
+        },
+      },
+    ];
+
+    const devBlocks: object[] = [
       {
         type: "header",
         text: { type: "plain_text", text: "Done list", emoji: false },
@@ -260,38 +271,37 @@ ${JSON.stringify(workingItems.map((i) => ({ id: i.id, text: i.text })))}`;
     ];
 
     for (const [category, categoryItems] of Object.entries(grouped)) {
-      blocks.push({
+      devBlocks.push({
         type: "section",
         text: { type: "mrkdwn", text: `*${category}*` },
       });
       for (const item of categoryItems) {
-        blocks.push({
+        devBlocks.push({
           type: "section",
           text: { type: "mrkdwn", text: `- ${item.slack_text}` },
         });
       }
     }
 
-    blocks.push({ type: "divider" });
-
-    blocks.push({
-      type: "section",
-      text: { type: "mrkdwn", text: summary ?? "" },
-    });
-
     try {
-      console.log(
-        "sending to /api/slack",
-        JSON.stringify({ blocks }).slice(0, 200),
-      );
-      const slackResponse = await fetch("/api/slack", {
+      const dailyResponse = await fetch("/api/slack", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ blocks }),
+        body: JSON.stringify({ target: "daily", blocks: dailyBlocks }),
       });
 
-      if (!slackResponse.ok) {
-        throw new Error(`Slack error: ${slackResponse.status}`);
+      if (!dailyResponse.ok) {
+        throw new Error(`Slack daily error: ${dailyResponse.status}`);
+      }
+
+      const devResponse = await fetch("/api/slack", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ target: "dev", blocks: devBlocks }),
+      });
+
+      if (!devResponse.ok) {
+        throw new Error(`Slack dev error: ${devResponse.status}`);
       }
 
       const { error: supabaseError } = await supabase
@@ -316,18 +326,35 @@ ${JSON.stringify(workingItems.map((i) => ({ id: i.id, text: i.text })))}`;
 
   const cancelPreview = (): void => {
     setEnrichedItems([]);
-    setSummary(null);
+    setDone(null);
+    setNextText(null);
+    setBlockedText(null);
     setAvailableCategories([]);
+    setDoneAdditions("");
+    setNext("");
+    setBlocked("");
     setEnrichmentStatus("idle");
     setEnrichmentError(null);
   };
 
   return {
     triggerEnrichment,
+    startCollecting,
     enrichedItems,
-    summary,
+    done,
+    nextText,
+    blockedText,
     availableCategories,
     handleCategoryChange,
+    handleDoneChange: setDone,
+    handleNextTextChange: setNextText,
+    handleBlockedTextChange: setBlockedText,
+    doneAdditions,
+    next,
+    blocked,
+    handleDoneAdditionsChange: setDoneAdditions,
+    handleNextChange: setNext,
+    handleBlockedChange: setBlocked,
     confirmSend,
     cancelPreview,
     enrichmentStatus,

@@ -4,9 +4,14 @@ import { Button } from "@/components/ui/Button";
 
 interface SlackPreviewProps {
   enrichedItems: EnrichedItem[];
-  summary: string;
+  done: string;
+  next: string;
+  blocked: string;
   availableCategories: string[];
   onCategoryChange: (id: string, category: string) => void;
+  onDoneChange: (value: string) => void;
+  onNextChange: (value: string) => void;
+  onBlockedChange: (value: string) => void;
   onConfirm: () => void;
   onCancel: () => void;
   isSending: boolean;
@@ -74,9 +79,14 @@ function CategoryCombobox({
 
 export function SlackPreview({
   enrichedItems,
-  summary,
+  done,
+  next,
+  blocked,
   availableCategories,
   onCategoryChange,
+  onDoneChange,
+  onNextChange,
+  onBlockedChange,
   onConfirm,
   onCancel,
   isSending,
@@ -110,8 +120,34 @@ export function SlackPreview({
         </div>
       ))}
 
-      <div className="border-t border-bark/15 pt-4">
-        <p className="text-sm text-bark/70">{summary}</p>
+      <div className="border-t border-bark/15 pt-4 flex flex-col gap-3">
+        <div className="flex flex-col gap-1">
+          <label className="text-xs font-semibold text-bark/60">Done</label>
+          <textarea
+            value={done}
+            onChange={(e) => onDoneChange(e.target.value)}
+            rows={3}
+            className="w-full rounded-lg border-2 border-bark/30 bg-parchment px-3 py-2 text-sm text-bark shadow-sm focus:outline-none focus:ring-2 focus:ring-moss resize-none"
+          />
+        </div>
+        <div className="flex flex-col gap-1">
+          <label className="text-xs font-semibold text-bark/60">Next</label>
+          <textarea
+            value={next}
+            onChange={(e) => onNextChange(e.target.value)}
+            rows={2}
+            className="w-full rounded-lg border-2 border-bark/30 bg-parchment px-3 py-2 text-sm text-bark shadow-sm focus:outline-none focus:ring-2 focus:ring-moss resize-none"
+          />
+        </div>
+        <div className="flex flex-col gap-1">
+          <label className="text-xs font-semibold text-bark/60">Blocked</label>
+          <textarea
+            value={blocked}
+            onChange={(e) => onBlockedChange(e.target.value)}
+            rows={2}
+            className="w-full rounded-lg border-2 border-bark/30 bg-parchment px-3 py-2 text-sm text-bark shadow-sm focus:outline-none focus:ring-2 focus:ring-moss resize-none"
+          />
+        </div>
       </div>
 
       <div className="flex gap-2">

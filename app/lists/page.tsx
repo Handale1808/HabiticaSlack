@@ -44,9 +44,14 @@ export default function ListsPage() {
   const {
     triggerEnrichment,
     enrichedItems,
-    summary,
+    done,
+    nextText,
+    blockedText,
     availableCategories,
     handleCategoryChange,
+    handleDoneChange,
+    handleNextTextChange,
+    handleBlockedTextChange,
     confirmSend,
     cancelPreview,
     enrichmentStatus,
@@ -214,12 +219,17 @@ export default function ListsPage() {
               slackItemsError={slackItemsError}
               enrichmentStatus={enrichmentStatus}
               enrichedItems={enrichedItems}
-              summary={summary}
+              done={done}
+              nextText={nextText}
+              blockedText={blockedText}
               availableCategories={availableCategories}
               enrichmentError={enrichmentError}
               onOpen={() => router.push(`/lists/${list.id}`)}
               onSlackClick={() => handleSlackClick(list.id)}
               onCategoryChange={handleCategoryChange}
+              onDoneChange={handleDoneChange}
+              onNextTextChange={handleNextTextChange}
+              onBlockedTextChange={handleBlockedTextChange}
               onConfirm={confirmSend}
               onCancel={cancelPreview}
               onCompletedAtChange={(date) =>

@@ -19,14 +19,19 @@ interface ListCardProps {
   isActive: boolean;
   slackItemsLoading: boolean;
   slackItemsError: string | null;
-  enrichmentStatus: "idle" | "loading" | "preview" | "sending" | "success" | "error";
+  enrichmentStatus: "idle" | "collecting" | "loading" | "preview" | "sending" | "success" | "error";
   enrichedItems: EnrichedItem[];
-  summary: string | null;
+  done: string | null;
+  nextText: string | null;
+  blockedText: string | null;
   availableCategories: string[];
   enrichmentError: string | null;
   onOpen: () => void;
   onSlackClick: () => void;
   onCategoryChange: (id: string, category: string) => void;
+  onDoneChange: (value: string) => void;
+  onNextTextChange: (value: string) => void;
+  onBlockedTextChange: (value: string) => void;
   onConfirm: () => void;
   onCancel: () => void;
   onCompletedAtChange: (date: Date | null) => void;
@@ -40,12 +45,17 @@ export function ListCard({
   slackItemsError,
   enrichmentStatus,
   enrichedItems,
-  summary,
+  done,
+  nextText,
+  blockedText,
   availableCategories,
   enrichmentError,
   onOpen,
   onSlackClick,
   onCategoryChange,
+  onDoneChange,
+  onNextTextChange,
+  onBlockedTextChange,
   onConfirm,
   onCancel,
   onCompletedAtChange,
@@ -132,12 +142,17 @@ export function ListCard({
           enrichmentStatus === "sending" ||
           enrichmentStatus === "error") &&
         enrichedItems.length > 0 &&
-        summary && (
+        done !== null && (
           <SlackPreview
             enrichedItems={enrichedItems}
-            summary={summary}
+            done={done}
+            next={nextText ?? ""}
+            blocked={blockedText ?? ""}
             availableCategories={availableCategories}
             onCategoryChange={onCategoryChange}
+            onDoneChange={onDoneChange}
+            onNextChange={onNextTextChange}
+            onBlockedChange={onBlockedTextChange}
             onConfirm={onConfirm}
             onCancel={onCancel}
             isSending={enrichmentStatus === "sending"}

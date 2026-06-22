@@ -4,10 +4,16 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest) {
   const body = await req.json();
 
-  const webhookUrl = process.env.SLACK_WEBHOOK_BASERATE_DEV;
+  const target: string = body.target ?? "dev";
+  const webhookUrl =
+    target === "daily"
+      ? process.env.SLACK_WEBHOOK_DAILY
+      : process.env.SLACK_WEBHOOK_BASERATE_DEV;
+
   if (!webhookUrl) {
+    const which = target === "daily" ? "SLACK_WEBHOOK_DAILY" : "SLACK_WEBHOOK_BASERATE_DEV";
     return NextResponse.json(
-      { error: "Webhook URL not configured" },
+      { error: `Webhook URL not configured (${which})` },
       { status: 500 },
     );
   }

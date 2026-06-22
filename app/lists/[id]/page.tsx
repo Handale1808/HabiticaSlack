@@ -110,10 +110,22 @@ export default function ListDetailPage({
 
   const {
     triggerEnrichment,
+    startCollecting,
     enrichedItems,
-    summary,
+    done,
+    nextText,
+    blockedText,
     availableCategories,
     handleCategoryChange,
+    handleDoneChange,
+    handleNextTextChange,
+    handleBlockedTextChange,
+    doneAdditions,
+    next,
+    blocked,
+    handleDoneAdditionsChange,
+    handleNextChange,
+    handleBlockedChange,
     confirmSend,
     cancelPreview,
     enrichmentStatus,
@@ -216,10 +228,22 @@ export default function ListDetailPage({
           <SlackSendBlock
             enrichmentStatus={enrichmentStatus}
             enrichedItems={enrichedItems}
-            summary={summary}
+            done={done}
+            nextText={nextText}
+            blockedText={blockedText}
             availableCategories={availableCategories}
             onCategoryChange={handleCategoryChange}
-            onTrigger={() => triggerEnrichment(items)}
+            onDoneChange={handleDoneChange}
+            onNextTextChange={handleNextTextChange}
+            onBlockedTextChange={handleBlockedTextChange}
+            doneAdditions={doneAdditions}
+            next={next}
+            blocked={blocked}
+            onDoneAdditionsChange={handleDoneAdditionsChange}
+            onNextChange={handleNextChange}
+            onBlockedChange={handleBlockedChange}
+            onStartCollecting={startCollecting}
+            onTrigger={triggerEnrichment}
             onConfirm={confirmSend}
             onCancel={cancelPreview}
             sendError={enrichmentError}
