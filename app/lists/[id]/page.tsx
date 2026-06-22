@@ -87,6 +87,7 @@ export default function ListDetailPage({
     handleBlur,
     handleTagChange,
     markAsSent,
+    removeItem,
     updateStatus,
     updateError,
   } = useDoneItems(initialItems);
@@ -214,6 +215,7 @@ export default function ListDetailPage({
                   const item = items.find((i) => i.id === id);
                   if (item) sendItem(item);
                 }}
+                onDelete={removeItem}
               />
             ))}
             {updateStatus === "saving" && (

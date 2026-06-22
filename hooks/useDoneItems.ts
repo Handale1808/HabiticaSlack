@@ -19,6 +19,7 @@ interface UseDoneItemsReturn {
   handleBlur: (id: string) => Promise<void>;
   handleTagChange: (id: string, tagId: string | null) => Promise<void>;
   markAsSent: (id: string, habiticaId: string) => void;
+  removeItem: (id: string) => Promise<void>;
   updateStatus: UpdateStatus;
   updateError: string | null;
 }
@@ -87,6 +88,18 @@ export function useDoneItems(initialItems: DoneItem[]): UseDoneItemsReturn {
     setUpdateStatus("idle");
   };
 
+  const removeItem = async (id: string) => {
+    const { error } = await supabase.from("DoneItems").delete().eq("id", id);
+
+    if (error) {
+      setUpdateStatus("error");
+      setUpdateError(error.message);
+      return;
+    }
+
+    setItems((prev) => prev.filter((item) => item.id !== id));
+  };
+
   const markAsSent = (id: string, habiticaId: string) => {
     setItems((prev) =>
       prev.map((item) =>
@@ -103,6 +116,7 @@ export function useDoneItems(initialItems: DoneItem[]): UseDoneItemsReturn {
     handleBlur,
     handleTagChange,
     markAsSent,
+    removeItem,
     updateStatus,
     updateError,
   };

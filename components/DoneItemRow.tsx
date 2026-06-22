@@ -2,6 +2,7 @@
 
 import { Dropdown } from "@/components/ui/Dropdown";
 import { Button } from "@/components/ui/Button";
+import { IconButton } from "@/components/ui/IconButton";
 
 interface Tag {
   id: string;
@@ -20,9 +21,10 @@ interface DoneItemRowProps {
   onBlur: (id: string) => void;
   onTagChange: (id: string, tagId: string | null) => void;
   onSend: (id: string) => void;
+  onDelete?: (id: string) => void;
 }
 
-export function DoneItemRow({ id, text, tagId, tags, habiticaSend, isSending, sendError, onChange, onBlur, onTagChange, onSend }: DoneItemRowProps) {
+export function DoneItemRow({ id, text, tagId, tags, habiticaSend, isSending, sendError, onChange, onBlur, onTagChange, onSend, onDelete }: DoneItemRowProps) {
   const tagOptions = [
     { id: "", label: "No tag" },
     ...tags.map((tag) => ({ id: tag.id, label: tag.name })),
@@ -46,6 +48,22 @@ export function DoneItemRow({ id, text, tagId, tags, habiticaSend, isSending, se
             placeholder="no tag"
           />
         </div>
+        {onDelete && (
+          <IconButton onClick={() => onDelete(id)} aria-label="delete item">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-3.5 w-3.5"
+              aria-hidden="true"
+            >
+              <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
+            </svg>
+          </IconButton>
+        )}
         {habiticaSend ? (
           <Button variant="shiny">
             <svg

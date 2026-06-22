@@ -5,6 +5,7 @@ import { TrainingToggle } from "@/components/TrainingToggle";
 import { SlackPreview } from "@/components/SlackPreview";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { IconButton } from "@/components/ui/IconButton";
 
 interface ListRow {
   id: string;
@@ -28,6 +29,7 @@ interface ListCardProps {
   enrichmentError: string | null;
   onOpen: () => void;
   onSlackClick: () => void;
+  onDelete?: () => void;
   onCategoryChange: (id: string, category: string) => void;
   onDoneChange: (value: string) => void;
   onNextTextChange: (value: string) => void;
@@ -52,6 +54,7 @@ export function ListCard({
   enrichmentError,
   onOpen,
   onSlackClick,
+  onDelete,
   onCategoryChange,
   onDoneChange,
   onNextTextChange,
@@ -87,6 +90,22 @@ export function ListCard({
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-bark/15 pt-3">
         <div className="flex items-center gap-4">
+          {onDelete && (
+            <IconButton onClick={onDelete} aria-label="delete list">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-3.5 w-3.5"
+                aria-hidden="true"
+              >
+                <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
+              </svg>
+            </IconButton>
+          )}
           <CompletedDateEditor
             listId={list.id}
             value={list.completed_at ? parseISO(list.completed_at) : null}

@@ -131,6 +131,15 @@ export default function ListsPage() {
     );
   };
 
+  const handleDeleteList = async (listId: string) => {
+    if (!window.confirm("delete this list and all its items?")) return;
+
+    await supabase.from("DoneItems").delete().eq("list_id", listId);
+    await supabase.from("Lists").delete().eq("id", listId);
+
+    setLists((prev) => prev.filter((l) => l.id !== listId));
+  };
+
   const handleCompletedAtChange = (listId: string, newDate: Date | null) => {
     setLists((prev) =>
       prev.map((l) =>
@@ -226,6 +235,7 @@ export default function ListsPage() {
               enrichmentError={enrichmentError}
               onOpen={() => router.push(`/lists/${list.id}`)}
               onSlackClick={() => handleSlackClick(list.id)}
+              onDelete={() => handleDeleteList(list.id)}
               onCategoryChange={handleCategoryChange}
               onDoneChange={handleDoneChange}
               onNextTextChange={handleNextTextChange}
