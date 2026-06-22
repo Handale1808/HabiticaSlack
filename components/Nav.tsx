@@ -67,6 +67,7 @@ export function Nav() {
                   maxWonder={userStats.maxWonder}
                   magic={userStats.magic}
                   maxMagic={userStats.maxMagic}
+                  avatarUrl={currentUser?.avatar_url}
                 />
               </div>
             )}

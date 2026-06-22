@@ -37,7 +37,7 @@ function StatBar({
         </span>
       )}
       <div
-        className="relative overflow-hidden shrink-0 rounded-sm bg-bark/30"
+        className="relative overflow-hidden shrink-0 bg-bark/30"
         style={{ width: BAR_DISPLAY_W, height: BAR_DISPLAY_H }}
       >
         <div
@@ -67,14 +67,14 @@ export function CustomStatBars({
         label="wnd"
         value={wonder}
         max={maxWonder}
-        fillClass="bg-honey/70"
+        fillClass="bg-honey"
         showLabel={showLabel}
       />
       <StatBar
         label="mgc"
         value={magic}
         max={maxMagic}
-        fillClass="bg-berry/70"
+        fillClass="bg-berry"
         showLabel={showLabel}
       />
     </div>
