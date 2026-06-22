@@ -94,7 +94,7 @@ export default function ProfilePage() {
       return;
     }
 
-    setCurrentUser(data);
+    if (data) setCurrentUser(data);
     router.push("/upload");
   };
 
