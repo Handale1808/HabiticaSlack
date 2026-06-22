@@ -22,6 +22,7 @@ export function Nav() {
       : [
           { href: "/upload", label: "upload" },
           { href: "/lists", label: "lists" },
+          { href: "/store", label: "store" },
           { href: "/profile", label: "profile" },
         ];
 

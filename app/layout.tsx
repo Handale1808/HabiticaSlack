@@ -4,6 +4,7 @@ import "react-day-picker/style.css";
 import "./globals.css";
 import { UserProvider } from "@/context/UserContext";
 import { Nav } from "@/components/Nav";
+import { PetLayer } from "@/components/PetLayer";
 
 
 const geistSans = Geist({
@@ -39,6 +40,7 @@ export default function RootLayout({
         <UserProvider>
           <Nav />
           {children}
+          <PetLayer />
         </UserProvider>
       </body>
     </html>

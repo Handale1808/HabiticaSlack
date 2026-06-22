@@ -82,3 +82,5 @@ These are rules, not guidelines. Breaking them causes bugs and unpredictable beh
 - **Only call hooks at the top level** — never inside loops, conditions, or nested functions.
 - **Only call hooks from React functions** — call them from function components or custom hooks only, never from plain JavaScript functions.
 - Custom hooks may call other hooks freely.
+
+always first look at supabase.ts before suggesting database items and if it seems outdated ask me to update it with `npx supabase gen types typescript --project-id kfvczqsplhefjqcfpwak > supabase.ts`

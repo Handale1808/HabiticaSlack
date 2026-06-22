@@ -11,7 +11,9 @@ import type { User as AuthUser } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabaseClient";
 import { useHabiticaStats } from "@/hooks/useHabiticaStats";
 import { useUserStats } from "@/hooks/useUserStats";
+import { usePurchases } from "@/hooks/usePurchases";
 import type { UserStats } from "@/types/stats";
+import type { Purchase } from "@/types/store";
 
 interface User {
   id: string;
@@ -34,6 +36,8 @@ interface UserContextValue {
   refreshHabiticaStats: () => void;
   userStats: UserStats | null;
   setUserStats: (s: UserStats | null) => void;
+  purchases: Purchase[];
+  refreshPurchases: () => void;
 }
 
 const UserContext = createContext<UserContextValue | null>(null);
@@ -66,6 +70,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
   const { userStats } = useUserStats(authUser?.id ?? null);
   const [userStatsState, setUserStatsState] = useState<UserStats | null>(null);
+
+  const { purchases, refreshPurchases } = usePurchases(authUser?.id ?? null);
 
   useEffect(() => {
     setUserStatsState(userStats);
@@ -127,6 +133,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         refreshHabiticaStats,
         userStats: userStatsState,
         setUserStats: setUserStatsState,
+        purchases,
+        refreshPurchases,
       }}
     >
       {children}
