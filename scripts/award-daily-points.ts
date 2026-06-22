@@ -324,7 +324,7 @@ async function processUser(userId: string) {
       const { error: updateErr } = await supabase
         .from("UserStats")
         .update(updates)
-        .eq("user_id", userId);
+        .eq("user_id", authUserId);
       if (updateErr) {
         console.error(`User ${userId}: Failed to update UserStats — ${updateErr.message}`);
       }

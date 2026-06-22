@@ -1,4 +1,4 @@
-type StatType = "wonder" | "magic" | "acorns";
+type StatType = "wonder" | "acorns" | "acorns";
 
 export interface WinCondition {
   name: string;
@@ -22,7 +22,7 @@ const WIN_CONDITIONS: WinCondition[] = [
     name: "planner",
     description:
       "The user created or completed an implementation plan. Look for tasks like 'implementation plan', 'planned', 'mapped out', 'wrote plan for'.",
-    stat_type: "magic",
+    stat_type: "acorns",
     min_amount: 5,
     max_amount: 15,
   },
@@ -38,7 +38,7 @@ const WIN_CONDITIONS: WinCondition[] = [
     name: "bug-slayer",
     description:
       "The user fixed, debugged, or resolved an issue. Look for tasks like 'fixed', 'resolved', 'debugged', 'looked into why', 'deleted', 'removed'.",
-    stat_type: "magic",
+    stat_type: "acorns",
     min_amount: 4,
     max_amount: 12,
   },
@@ -46,7 +46,7 @@ const WIN_CONDITIONS: WinCondition[] = [
     name: "hook-line-sinker",
     description:
       "The user created or updated a custom hook. Look for tasks like 'made use[X] hook', 'updated hook', 'made hook'.",
-    stat_type: "magic",
+    stat_type: "acorns",
     min_amount: 5,
     max_amount: 14,
   },
@@ -70,7 +70,7 @@ const WIN_CONDITIONS: WinCondition[] = [
     name: "data-architect",
     description:
       "The user worked on data structures, database tables, or data models. Look for tasks like 'made table', 'created bucket', 'made data structures', 'updated schema'.",
-    stat_type: "magic",
+    stat_type: "acorns",
     min_amount: 5,
     max_amount: 15,
   },
