@@ -22,11 +22,14 @@ export function SendAllButton({ items, sendItem }: SendAllButtonProps) {
   const handleSendAll = async () => {
     setIsBulkSending(true);
     const unsent = items.filter((item) => item.habitica_send !== true);
-    for (const item of unsent) {
-      await sendItem(item);
-      await new Promise((resolve) => setTimeout(resolve, 500));
+    try {
+      for (const item of unsent) {
+        await sendItem(item);
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      }
+    } finally {
+      setIsBulkSending(false);
     }
-    setIsBulkSending(false);
   };
 
 const allSent = items.every((item) => item.habitica_send === true);

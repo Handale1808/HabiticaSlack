@@ -2,21 +2,6 @@ import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useUser } from "@/context/UserContext";
 
-async function fetchWithRetry(
-  url: string,
-  options: RequestInit,
-  maxRetries = 5,
-): Promise<Response> {
-  let delay = 2000
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    const response = await fetch(url, options)
-    if (response.status !== 429 || attempt === maxRetries) return response
-    await new Promise((resolve) => setTimeout(resolve, delay))
-    delay *= 2
-  }
-  // unreachable but satisfies TS
-  return fetch(url, options)
-}
 
 interface DoneItem {
   id: string;
@@ -57,19 +42,19 @@ export function useHabiticaSend(
     };
 
     try {
-      const createResponse = await fetchWithRetry(
-        "https://habitica.com/api/v3/tasks/user",
-        {
-          method: "POST",
-          headers,
-          body: JSON.stringify({
-            type: "todo",
-            text: item.text,
-            tags: item.habitica_tag ? [item.habitica_tag] : [],
-          }),
-        },
-      );
+      const createResponse = await fetch("https://habitica.com/api/v3/tasks/user", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          type: "todo",
+          text: item.text,
+          tags: item.habitica_tag ? [item.habitica_tag] : [],
+        }),
+      });
 
+      if (createResponse.status === 429) {
+        throw new Error("Habitica rate limit reached. Please wait a minute before trying again.");
+      }
       if (!createResponse.ok) {
         throw new Error(`Habitica error: ${createResponse.status}`);
       }
@@ -77,14 +62,14 @@ export function useHabiticaSend(
       const createJson = await createResponse.json();
       const habiticaTaskId: string = createJson.data.id;
 
-      const scoreResponse = await fetchWithRetry(
-        `https://habitica.com/api/v3/tasks/${habiticaTaskId}/score/up`,
-        {
-          method: "POST",
-          headers,
-        },
-      );
+      const scoreResponse = await fetch(`https://habitica.com/api/v3/tasks/${habiticaTaskId}/score/up`, {
+        method: "POST",
+        headers,
+      });
 
+      if (scoreResponse.status === 429) {
+        throw new Error("Habitica rate limit reached. Please wait a minute before trying again.");
+      }
       if (!scoreResponse.ok) {
         throw new Error(
           `Habitica score error: ${scoreResponse.status} — task was created in Habitica but could not be marked complete`,
