@@ -129,12 +129,12 @@ export default function LoginPage() {
           <p className="text-sm text-bark/60">or continue as:</p>
           {existingUsers.map((user) => (
             <div key={user.id} className="flex flex-col gap-2">
-              <button
+              <Button
+                variant="secondary"
                 onClick={() => handleSelectUser(user)}
-                className="rounded-lg border-2 border-bark/20 bg-parchment px-4 py-2 text-left text-sm text-bark shadow-sm transition-colors hover:border-bark/40 hover:bg-parchment-dark"
               >
                 {user.name}
-              </button>
+              </Button>
 
               {credentialPromptUserId === user.id && (
                 <Card className="flex flex-col gap-2 border-l-4 border-l-moss">

@@ -44,13 +44,13 @@ export function Button({
       type={type}
       onClick={onClick}
       disabled={isDisabled}
-      className={`relative inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold tracking-wide transition-all duration-150 disabled:pointer-events-none disabled:opacity-50 ${variantStyles[variant]} ${className}`}
+      className={`group relative inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold tracking-wide disabled:pointer-events-none disabled:opacity-50 ${variantStyles[variant]} ${className}`}
     >
       {spriteId !== undefined && (
         <SpriteNineSlice
           sheetKey="forest"
           spriteId={spriteId}
-          className="absolute inset-0 w-full h-full transition-[filter] duration-150 hover:brightness-125"
+          className="absolute inset-0 w-full h-full transition-[filter] duration-150 group-hover:brightness-125"
         />
       )}
       <span className="relative z-10 inline-flex items-center gap-2">
